@@ -47,9 +47,18 @@
     showView(initial);
   }
 
-  // Contact form: preview-only confirmation
+  // Contact form: submit to Formspree via fetch (stays on page)
   const form = document.getElementById("contactForm");
   const note = document.getElementById("formNote");
+  const submitBtn = form ? form.querySelector(".btn-submit") : null;
+
+  function setNote(message, isError) {
+    if (!note) return;
+    note.hidden = false;
+    note.textContent = message;
+    note.classList.toggle("is-error", !!isError);
+  }
+
   if (form) {
     form.addEventListener("submit", function (e) {
       e.preventDefault();
@@ -57,8 +66,41 @@
         form.reportValidity();
         return;
       }
-      if (note) note.hidden = false;
-      form.reset();
+
+      const data = new FormData(form);
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Sending…";
+      }
+
+      fetch(form.action, {
+        method: "POST",
+        body: data,
+        headers: { Accept: "application/json" },
+      })
+        .then(function (response) {
+          if (response.ok) {
+            setNote("Thanks — your message has been sent. We'll get back to you soon.", false);
+            form.reset();
+          } else {
+            return response.json().then(function (body) {
+              const msg =
+                body && body.errors
+                  ? body.errors.map((er) => er.message).join(", ")
+                  : "Something went wrong. Please try again or email us directly.";
+              setNote(msg, true);
+            });
+          }
+        })
+        .catch(function () {
+          setNote("Network error. Please try again or email us directly.", true);
+        })
+        .finally(function () {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Send Message";
+          }
+        });
     });
   }
 })();
