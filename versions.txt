@@ -1,0 +1,2 @@
+1.1 Static web version with 4 panels and a form controlled by Spreeform
+1.2 Need to disable temporaly the navigation panels and start adding main domain, also check for responssiveness on laptop screen 

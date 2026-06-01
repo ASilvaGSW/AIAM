@@ -503,6 +503,19 @@ a { text-decoration: none; color: inherit; }
   #view-contact .page { padding-top: 32px; padding-bottom: 32px; }
 }
 
+/* ===== Laptop screens: scale down ~10% =====
+   On large desktop monitors (>1700px) the layout looks balanced, but on
+   laptops the 1280px container nearly fills the screen and feels oversized.
+   This mimics a manual "zoom out to 90%" so laptops match the desktop look. */
+@media (min-width: 961px) and (max-width: 1700px) {
+  body { zoom: 0.9; }
+}
+/* CSS `zoom` does not scale vh units, so on the no-scroll fit-to-viewport
+   layout we grow the body height to compensate and avoid a blank gap. */
+@media (min-width: 961px) and (max-width: 1700px) and (min-height: 740px) {
+  body { height: calc(100vh / 0.9); }
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 960px) {
   .hero-grid {

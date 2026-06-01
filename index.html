@@ -18,6 +18,11 @@
         <img src="src/img/Logo_5_19_2026.png" alt="AIAM Technology" class="brand-logo" />
       </a>
 
+      <!--
+        Navigation disabled for the v1.2 release (single landing page).
+        Includes the mobile hamburger toggle. Keep this block for a future
+        multi-page version — just uncomment to restore Home/About/Technology/Contact.
+
       <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
@@ -28,6 +33,7 @@
         <a href="#technology" class="nav-link" data-view="technology">Technology</a>
         <a href="#contact" class="nav-link" data-view="contact">Contact</a>
       </nav>
+      -->
     </div>
   </header>
 
@@ -45,7 +51,9 @@
               practical support technologies for manufacturers.
             </p>
 
-            <a href="#contact" class="badge-coming" data-view="contact">
+            <!-- Was a link to the Contact view; navigation is disabled in v1.2,
+                 so this is now an informational badge only. -->
+            <span class="badge-coming">
               <span class="badge-icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
                   <rect x="3" y="4" width="18" height="17" rx="2" />
@@ -53,7 +61,7 @@
                 </svg>
               </span>
               Formal Website Coming June 2026
-            </a>
+            </span>
 
             <p class="tagline">
               <span class="tag-icon" aria-hidden="true">
