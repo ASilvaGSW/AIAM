@@ -1,2 +1,4 @@
 1.1 Static web version with 4 panels and a form controlled by Spreeform
 1.2 Need to disable temporaly the navigation panels and start adding main domain, also check for responssiveness on laptop screen 
+
+la opcion de your selection siempre esta visible deberia ser expandible y esconderse con el logo de un carrito, para los productos crea productos genericos en base al mercado y utiliza fotos diferentes para cada producto, asigna un precio que ronde entre los 25 y los 300 dolar de manera aleatoria a cada producto y que en el carrito se vea el total del costo
