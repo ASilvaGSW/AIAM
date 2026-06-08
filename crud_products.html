@@ -129,13 +129,54 @@
       margin-top: 0.75rem;
     }
 
-    .image-preview {
+    .image-preview-box {
+      position: relative;
       width: 96px;
       height: 96px;
+      flex-shrink: 0;
+      border-radius: 10px;
+      border: 1px dashed var(--border);
+      background: linear-gradient(145deg, var(--surface-2) 0%, var(--bg) 100%);
+      overflow: hidden;
+    }
+
+    .image-preview {
+      width: 100%;
+      height: 100%;
       object-fit: cover;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: var(--bg);
+      display: block;
+    }
+
+    .image-preview[hidden] {
+      display: none !important;
+    }
+
+    .image-preview-empty {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      color: var(--muted);
+      text-align: center;
+      padding: 0.5rem;
+    }
+
+    .image-preview-empty[hidden] {
+      display: none !important;
+    }
+
+    .image-preview-empty svg {
+      opacity: 0.85;
+    }
+
+    .image-preview-empty span {
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      line-height: 1.2;
     }
 
     .image-hint {
@@ -255,16 +296,85 @@
       color: var(--muted);
       font-size: 0.875rem;
     }
+
+    .login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.25rem;
+    }
+
+    .login-screen[hidden] {
+      display: none !important;
+    }
+
+    #adminApp[hidden] {
+      display: none !important;
+    }
+
+    .login-card {
+      width: min(400px, 100%);
+    }
+
+    .login-card h1 {
+      font-size: 1.35rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .login-card p {
+      color: var(--muted);
+      font-size: 0.875rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .login-field {
+      margin-bottom: 1rem;
+    }
+
+    .login-error {
+      margin: 0.75rem 0 0;
+      color: #fca5a5;
+      font-size: 0.875rem;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
+  <section class="login-screen" id="loginScreen">
+    <div class="login-card panel">
+      <h1>Admin sign in</h1>
+      <p>Sign in to manage products. Public visitors cannot edit the catalog.</p>
+      <form id="loginForm">
+        <div class="login-field">
+          <label for="loginEmail">Email</label>
+          <input id="loginEmail" type="email" autocomplete="username" required />
+        </div>
+        <div class="login-field">
+          <label for="loginPassword">Password</label>
+          <input id="loginPassword" type="password" autocomplete="current-password" required />
+        </div>
+        <button type="submit" class="btn" id="btnLogin">Sign in</button>
+      </form>
+      <p class="login-error" id="loginError" hidden></p>
+    </div>
+  </section>
+
+  <div class="wrap" id="adminApp" hidden>
     <header>
       <div>
         <h1>Products</h1>
         <p class="subtitle">CRUD · <code>products</code> table in Supabase</p>
       </div>
-      <button type="button" class="btn" id="btnRefresh">Refresh</button>
+      <div class="header-actions">
+        <button type="button" class="btn" id="btnRefresh">Refresh</button>
+        <button type="button" class="btn btn-ghost" id="btnSignOut">Sign out</button>
+      </div>
     </header>
 
     <div id="status" class="status loading" hidden></div>
@@ -290,11 +400,21 @@
         <div class="form-image">
           <label for="productImage">Product image</label>
           <input id="productImage" name="image" type="file" accept="image/png,image/jpeg,image/webp,image/gif" />
-          <div class="image-preview-wrap" id="imagePreviewWrap" hidden>
-            <img id="imagePreview" class="image-preview" alt="Image preview" />
-            <button type="button" class="btn btn-sm btn-ghost" id="btnRemoveImage">Remove image</button>
+          <div class="image-preview-wrap" id="imagePreviewWrap">
+            <div class="image-preview-box">
+              <div class="image-preview-empty" id="imagePreviewEmpty">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                  <rect x="3" y="5" width="18" height="14" rx="2" />
+                  <circle cx="9" cy="10" r="1.6" fill="currentColor" stroke="none" />
+                  <path d="M3 16l5.2-4.2a1.2 1.2 0 011.5 0L14 15l2.2-2a1.2 1.2 0 011.4 0L21 16" />
+                </svg>
+                <span>No image</span>
+              </div>
+              <img id="imagePreview" class="image-preview" alt="" hidden />
+            </div>
+            <button type="button" class="btn btn-sm btn-ghost" id="btnRemoveImage" hidden>Remove image</button>
           </div>
-          <p class="image-hint">Optional. Uploaded to Supabase Storage (<code>Img</code> bucket) and saved in the <code>image</code> column. If upload fails with an RLS error, run <code>supabase-storage-policies.sql</code> in the Supabase SQL Editor.</p>
+          <p class="image-hint">Optional. Requires admin sign-in and <code>supabase-security-policies.sql</code> applied in Supabase.</p>
         </div>
       </form>
     </section>
@@ -322,13 +442,19 @@
     const SUPABASE_URL = "https://vysyknzuektohzybfndd.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5c3lrbnp1ZWt0b2h6eWJmbmRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzMzU0MzMsImV4cCI6MjA5NTkxMTQzM30.xhaHbB1i9rUh_NK91YMjqGaAmuPgk2QbNe8uqH9YM0M";
 
+    const AUTH_API = SUPABASE_URL + "/auth/v1/token?grant_type=password";
     const API = SUPABASE_URL + "/rest/v1/products";
     const STORAGE_BUCKET = "Img";
-    const HEADERS = {
-      apikey: SUPABASE_ANON_KEY,
-      Authorization: "Bearer " + SUPABASE_ANON_KEY,
-      "Content-Type": "application/json",
-    };
+    const SESSION_KEY = "aiam-admin-session";
+
+    const loginScreen = document.getElementById("loginScreen");
+    const loginForm = document.getElementById("loginForm");
+    const loginEmail = document.getElementById("loginEmail");
+    const loginPassword = document.getElementById("loginPassword");
+    const loginError = document.getElementById("loginError");
+    const btnLogin = document.getElementById("btnLogin");
+    const adminApp = document.getElementById("adminApp");
+    const btnSignOut = document.getElementById("btnSignOut");
 
     const statusEl = document.getElementById("status");
     const tbody = document.getElementById("tbody");
@@ -344,6 +470,7 @@
     const productImage = document.getElementById("productImage");
     const imagePreviewWrap = document.getElementById("imagePreviewWrap");
     const imagePreview = document.getElementById("imagePreview");
+    const imagePreviewEmpty = document.getElementById("imagePreviewEmpty");
     const btnRemoveImage = document.getElementById("btnRemoveImage");
     const btnSave = document.getElementById("btnSave");
     const btnCancel = document.getElementById("btnCancel");
@@ -351,6 +478,95 @@
     let statusTimer = null;
     let currentImageUrl = null;
     let previewObjectUrl = null;
+
+    function getSession() {
+      try {
+        const raw = sessionStorage.getItem(SESSION_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch {
+        return null;
+      }
+    }
+
+    function saveSession(session) {
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    }
+
+    function clearSession() {
+      sessionStorage.removeItem(SESSION_KEY);
+    }
+
+    function getAccessToken() {
+      const session = getSession();
+      return session && session.access_token ? session.access_token : null;
+    }
+
+    function getAuthHeaders(contentType) {
+      const token = getAccessToken();
+      if (!token) throw new Error("Not signed in.");
+      const headers = {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: "Bearer " + token,
+      };
+      if (contentType) headers["Content-Type"] = contentType;
+      return headers;
+    }
+
+    function showLogin(message) {
+      if (adminApp) adminApp.hidden = true;
+      if (loginScreen) loginScreen.hidden = false;
+      if (loginError) {
+        loginError.hidden = !message;
+        loginError.textContent = message || "";
+      }
+    }
+
+    function showAdmin() {
+      if (loginScreen) loginScreen.hidden = true;
+      if (adminApp) adminApp.hidden = false;
+      if (loginError) loginError.hidden = true;
+    }
+
+    async function signIn(email, password) {
+      const response = await fetch(AUTH_API, {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const text = await response.text();
+      let body = null;
+      if (text) {
+        try {
+          body = JSON.parse(text);
+        } catch {
+          body = text;
+        }
+      }
+
+      if (!response.ok) {
+        const msg =
+          (body && (body.error_description || body.msg || body.message)) ||
+          (typeof body === "string" ? body : "Invalid credentials.");
+        throw new Error(msg);
+      }
+
+      saveSession({
+        access_token: body.access_token,
+        refresh_token: body.refresh_token,
+        expires_at: Date.now() + (body.expires_in || 3600) * 1000,
+        email: email,
+      });
+    }
+
+    function signOut() {
+      clearSession();
+      resetForm();
+      showLogin();
+    }
 
     function showStatus(message, type, autoHideMs) {
       clearTimeout(statusTimer);
@@ -412,12 +628,30 @@
 
     function showImagePreview(url) {
       if (!url) {
-        imagePreviewWrap.hidden = true;
-        imagePreview.removeAttribute("src");
+        if (imagePreview) {
+          imagePreview.hidden = true;
+          imagePreview.removeAttribute("src");
+        }
+        if (imagePreviewEmpty) imagePreviewEmpty.hidden = false;
+        if (btnRemoveImage) btnRemoveImage.hidden = true;
         return;
       }
+
+      if (imagePreviewEmpty) imagePreviewEmpty.hidden = true;
+      if (btnRemoveImage) btnRemoveImage.hidden = false;
+      if (!imagePreview) return;
+
+      imagePreview.hidden = false;
+      imagePreview.onerror = function () {
+        imagePreview.hidden = true;
+        imagePreview.removeAttribute("src");
+        if (imagePreviewEmpty) imagePreviewEmpty.hidden = false;
+        if (btnRemoveImage) btnRemoveImage.hidden = true;
+      };
+      imagePreview.onload = function () {
+        if (imagePreviewEmpty) imagePreviewEmpty.hidden = true;
+      };
       imagePreview.src = url;
-      imagePreviewWrap.hidden = false;
     }
 
     async function uploadProductImage(file, productId) {
@@ -429,11 +663,7 @@
         SUPABASE_URL + "/storage/v1/object/" + STORAGE_BUCKET + "/" + storagePath,
         {
           method: "POST",
-          headers: {
-            apikey: SUPABASE_ANON_KEY,
-            Authorization: "Bearer " + SUPABASE_ANON_KEY,
-            "Content-Type": file.type || "application/octet-stream",
-          },
+          headers: getAuthHeaders(file.type || "application/octet-stream"),
           body: file,
         }
       );
@@ -449,7 +679,7 @@
         }
         if (/row-level security/i.test(message)) {
           throw new Error(
-            "Image upload blocked by Storage RLS. Run supabase-storage-policies.sql in the Supabase SQL Editor and confirm the bucket id is exactly \"Img\"."
+            "Image upload blocked. Sign in as admin and run supabase-security-policies.sql in Supabase."
           );
         }
         throw new Error("Image upload failed: " + message);
@@ -461,7 +691,7 @@
     async function apiRequest(url, options) {
       const response = await fetch(url, {
         ...options,
-        headers: { ...HEADERS, ...options.headers },
+        headers: { ...getAuthHeaders("application/json"), ...options.headers },
       });
       const text = await response.text();
       let body = null;
@@ -472,10 +702,19 @@
           body = text;
         }
       }
+      if (response.status === 401) {
+        signOut();
+        throw new Error("Session expired. Please sign in again.");
+      }
       if (!response.ok) {
         const msg =
           (body && body.message) ||
           (typeof body === "string" ? body : JSON.stringify(body));
+        if (response.status === 403 || /row-level security/i.test(msg)) {
+          throw new Error(
+            "Permission denied. Run supabase-security-policies.sql and sign in with an admin account."
+          );
+        }
         throw new Error(response.status + " — " + msg);
       }
       return body;
@@ -697,7 +936,30 @@
     });
 
     btnRefresh.addEventListener("click", loadProducts);
-    loadProducts();
+    btnSignOut.addEventListener("click", signOut);
+
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (loginError) loginError.hidden = true;
+      btnLogin.disabled = true;
+
+      try {
+        await signIn(loginEmail.value.trim(), loginPassword.value);
+        showAdmin();
+        await loadProducts();
+      } catch (err) {
+        showLogin(err.message || "Sign in failed.");
+      } finally {
+        btnLogin.disabled = false;
+      }
+    });
+
+    if (getAccessToken()) {
+      showAdmin();
+      loadProducts();
+    } else {
+      showLogin();
+    }
   </script>
 </body>
 </html>
