@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Productos — CRUD Supabase</title>
+  <title>Products — Supabase CRUD</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -103,9 +103,60 @@
 
     .form-grid {
       display: grid;
-      grid-template-columns: 1fr 120px auto auto;
+      grid-template-columns: 1fr 110px 110px auto auto;
       gap: 0.75rem;
       align-items: end;
+    }
+
+    .form-image {
+      grid-column: 1 / -1;
+      margin-top: 0.25rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .form-image input[type="file"] {
+      width: 100%;
+      font: inherit;
+      padding: 0.5rem 0;
+      color: var(--muted);
+    }
+
+    .image-preview-wrap {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-top: 0.75rem;
+    }
+
+    .image-preview {
+      width: 96px;
+      height: 96px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+    }
+
+    .image-hint {
+      margin: 0.5rem 0 0;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .thumb {
+      width: 44px;
+      height: 44px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      display: block;
+    }
+
+    .thumb-empty {
+      color: var(--muted);
+      font-size: 0.75rem;
     }
 
     @media (max-width: 640px) {
@@ -210,28 +261,41 @@
   <div class="wrap">
     <header>
       <div>
-        <h1>Productos</h1>
-        <p class="subtitle">CRUD · tabla <code>products</code> en Supabase</p>
+        <h1>Products</h1>
+        <p class="subtitle">CRUD · <code>products</code> table in Supabase</p>
       </div>
-      <button type="button" class="btn" id="btnRefresh">Actualizar</button>
+      <button type="button" class="btn" id="btnRefresh">Refresh</button>
     </header>
 
     <div id="status" class="status loading" hidden></div>
 
     <section class="panel">
-      <h2 id="formTitle">Nuevo producto</h2>
+      <h2 id="formTitle">New product</h2>
       <form id="productForm" class="form-grid">
         <input type="hidden" id="editId" value="" />
         <div>
-          <label for="productName">Nombre del producto</label>
-          <input id="productName" name="product_name" type="text" required placeholder="Ej. Linear Actuator" />
+          <label for="productName">Product name</label>
+          <input id="productName" name="product_name" type="text" required placeholder="e.g. Linear Actuator" />
         </div>
         <div>
-          <label for="productQty">Cantidad</label>
+          <label for="productQty">Quantity</label>
           <input id="productQty" name="qty" type="number" min="0" step="1" required value="1" />
         </div>
-        <button type="submit" class="btn" id="btnSave">Guardar</button>
-        <button type="button" class="btn btn-ghost" id="btnCancel" hidden>Cancelar</button>
+        <div>
+          <label for="productPrice">Price (USD)</label>
+          <input id="productPrice" name="price" type="number" min="0" step="0.01" required value="0" />
+        </div>
+        <button type="submit" class="btn" id="btnSave">Save</button>
+        <button type="button" class="btn btn-ghost" id="btnCancel" hidden>Cancel</button>
+        <div class="form-image">
+          <label for="productImage">Product image</label>
+          <input id="productImage" name="image" type="file" accept="image/png,image/jpeg,image/webp,image/gif" />
+          <div class="image-preview-wrap" id="imagePreviewWrap" hidden>
+            <img id="imagePreview" class="image-preview" alt="Image preview" />
+            <button type="button" class="btn btn-sm btn-ghost" id="btnRemoveImage">Remove image</button>
+          </div>
+          <p class="image-hint">Optional. Uploaded to Supabase Storage (<code>Img</code> bucket) and saved in the <code>image</code> column. If upload fails with an RLS error, run <code>supabase-storage-policies.sql</code> in the Supabase SQL Editor.</p>
+        </div>
       </form>
     </section>
 
@@ -240,16 +304,18 @@
         <thead>
           <tr>
             <th>ID</th>
-            <th>Creado</th>
-            <th>Producto</th>
-            <th class="num">Cantidad</th>
+            <th>Created</th>
+            <th>Image</th>
+            <th>Product</th>
+            <th class="num">Qty</th>
+            <th class="num">Price</th>
             <th></th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
       </table>
     </div>
-    <p class="empty-table" id="emptyMsg" hidden>No hay productos. Agrega uno arriba.</p>
+    <p class="empty-table" id="emptyMsg" hidden>No products yet. Add one above.</p>
   </div>
 
   <script>
@@ -257,6 +323,7 @@
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5c3lrbnp1ZWt0b2h6eWJmbmRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzMzU0MzMsImV4cCI6MjA5NTkxMTQzM30.xhaHbB1i9rUh_NK91YMjqGaAmuPgk2QbNe8uqH9YM0M";
 
     const API = SUPABASE_URL + "/rest/v1/products";
+    const STORAGE_BUCKET = "Img";
     const HEADERS = {
       apikey: SUPABASE_ANON_KEY,
       Authorization: "Bearer " + SUPABASE_ANON_KEY,
@@ -273,10 +340,17 @@
     const editId = document.getElementById("editId");
     const productName = document.getElementById("productName");
     const productQty = document.getElementById("productQty");
+    const productPrice = document.getElementById("productPrice");
+    const productImage = document.getElementById("productImage");
+    const imagePreviewWrap = document.getElementById("imagePreviewWrap");
+    const imagePreview = document.getElementById("imagePreview");
+    const btnRemoveImage = document.getElementById("btnRemoveImage");
     const btnSave = document.getElementById("btnSave");
     const btnCancel = document.getElementById("btnCancel");
 
     let statusTimer = null;
+    let currentImageUrl = null;
+    let previewObjectUrl = null;
 
     function showStatus(message, type, autoHideMs) {
       clearTimeout(statusTimer);
@@ -297,13 +371,91 @@
       const d = new Date(iso);
       return Number.isNaN(d.getTime())
         ? iso
-        : d.toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" });
+        : d.toLocaleString("en-US", { dateStyle: "short", timeStyle: "short" });
+    }
+
+    function formatPrice(value) {
+      const num = Number(value);
+      if (!Number.isFinite(num)) return "—";
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+      }).format(num);
     }
 
     function escapeHtml(text) {
       const div = document.createElement("div");
       div.textContent = text == null ? "" : String(text);
       return div.innerHTML;
+    }
+
+    function escapeAttr(text) {
+      return escapeHtml(text).replace(/"/g, "&quot;");
+    }
+
+    function getPublicImageUrl(storagePath) {
+      return (
+        SUPABASE_URL +
+        "/storage/v1/object/public/" +
+        STORAGE_BUCKET +
+        "/" +
+        storagePath
+      );
+    }
+
+    function clearPreviewObjectUrl() {
+      if (previewObjectUrl) {
+        URL.revokeObjectURL(previewObjectUrl);
+        previewObjectUrl = null;
+      }
+    }
+
+    function showImagePreview(url) {
+      if (!url) {
+        imagePreviewWrap.hidden = true;
+        imagePreview.removeAttribute("src");
+        return;
+      }
+      imagePreview.src = url;
+      imagePreviewWrap.hidden = false;
+    }
+
+    async function uploadProductImage(file, productId) {
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const folder = productId ? String(productId) : "new";
+      const storagePath = folder + "/" + Date.now() + "-" + safeName;
+
+      const response = await fetch(
+        SUPABASE_URL + "/storage/v1/object/" + STORAGE_BUCKET + "/" + storagePath,
+        {
+          method: "POST",
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: "Bearer " + SUPABASE_ANON_KEY,
+            "Content-Type": file.type || "application/octet-stream",
+          },
+          body: file,
+        }
+      );
+
+      const text = await response.text();
+      if (!response.ok) {
+        let message = text;
+        try {
+          const parsed = JSON.parse(text);
+          message = parsed.message || parsed.error || parsed.statusCode || text;
+        } catch {
+          /* keep raw text */
+        }
+        if (/row-level security/i.test(message)) {
+          throw new Error(
+            "Image upload blocked by Storage RLS. Run supabase-storage-policies.sql in the Supabase SQL Editor and confirm the bucket id is exactly \"Img\"."
+          );
+        }
+        throw new Error("Image upload failed: " + message);
+      }
+
+      return getPublicImageUrl(storagePath);
     }
 
     async function apiRequest(url, options) {
@@ -333,8 +485,12 @@
       editId.value = "";
       productForm.reset();
       productQty.value = "1";
-      formTitle.textContent = "Nuevo producto";
-      btnSave.textContent = "Guardar";
+      productPrice.value = "0";
+      currentImageUrl = null;
+      clearPreviewObjectUrl();
+      showImagePreview(null);
+      formTitle.textContent = "New product";
+      btnSave.textContent = "Save";
       btnCancel.hidden = true;
     }
 
@@ -342,8 +498,13 @@
       editId.value = row.id;
       productName.value = row.product_name;
       productQty.value = row.qty;
-      formTitle.textContent = "Editar producto #" + row.id;
-      btnSave.textContent = "Actualizar";
+      productPrice.value = row.price;
+      currentImageUrl = row.image || null;
+      clearPreviewObjectUrl();
+      productImage.value = "";
+      showImagePreview(currentImageUrl);
+      formTitle.textContent = "Edit product #" + row.id;
+      btnSave.textContent = "Update";
       btnCancel.hidden = false;
       productName.focus();
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -362,15 +523,25 @@
       tbody.innerHTML = rows
         .map(
           (row) => `
-        <tr data-id="${escapeHtml(row.id)}">
+        <tr data-id="${escapeHtml(row.id)}"
+            data-name="${escapeHtml(row.product_name)}"
+            data-qty="${escapeHtml(row.qty)}"
+            data-price="${escapeHtml(row.price)}"
+            data-image="${escapeAttr(row.image || "")}">
           <td>${escapeHtml(row.id)}</td>
           <td>${escapeHtml(formatDate(row.created_at))}</td>
+          <td>${
+            row.image
+              ? `<img class="thumb" src="${escapeAttr(row.image)}" alt="" />`
+              : `<span class="thumb-empty">—</span>`
+          }</td>
           <td>${escapeHtml(row.product_name)}</td>
           <td class="num">${escapeHtml(row.qty)}</td>
+          <td class="num">${escapeHtml(formatPrice(row.price))}</td>
           <td>
             <div class="actions">
-              <button type="button" class="btn btn-sm btn-ghost btn-edit">Editar</button>
-              <button type="button" class="btn btn-sm btn-danger btn-delete">Eliminar</button>
+              <button type="button" class="btn btn-sm btn-ghost btn-edit">Edit</button>
+              <button type="button" class="btn btn-sm btn-danger btn-delete">Delete</button>
             </div>
           </td>
         </tr>`
@@ -380,17 +551,17 @@
 
     async function loadProducts() {
       btnRefresh.disabled = true;
-      showStatus("Cargando productos…", "loading");
+      showStatus("Loading products…", "loading");
 
       try {
         const data = await apiRequest(
-          API + "?select=id,created_at,product_name,qty&order=created_at.desc",
+          API + "?select=id,created_at,product_name,qty,price,image&order=created_at.desc",
           { method: "GET" }
         );
         hideStatus();
         renderRows(Array.isArray(data) ? data : []);
       } catch (err) {
-        showStatus("Error al cargar: " + err.message, "error");
+        showStatus("Failed to load: " + err.message, "error");
       } finally {
         btnRefresh.disabled = false;
       }
@@ -422,32 +593,53 @@
       e.preventDefault();
       const name = productName.value.trim();
       const qty = parseInt(productQty.value, 10);
+      const price = parseFloat(productPrice.value);
 
       if (!name) {
-        showStatus("El nombre del producto es obligatorio.", "error");
+        showStatus("Product name is required.", "error");
         return;
       }
       if (Number.isNaN(qty) || qty < 0) {
-        showStatus("La cantidad debe ser un número mayor o igual a 0.", "error");
+        showStatus("Quantity must be a number greater than or equal to 0.", "error");
+        return;
+      }
+      if (Number.isNaN(price) || price < 0) {
+        showStatus("Price must be a number greater than or equal to 0.", "error");
         return;
       }
 
-      const payload = { product_name: name, qty };
       btnSave.disabled = true;
 
       try {
+        let imageUrl = currentImageUrl;
+        const file = productImage.files[0];
+
+        if (file) {
+          if (!file.type.startsWith("image/")) {
+            showStatus("Please select a valid image file.", "error");
+            return;
+          }
+          if (file.size > 5 * 1024 * 1024) {
+            showStatus("Image must be 5 MB or smaller.", "error");
+            return;
+          }
+          showStatus("Uploading image…", "loading");
+          imageUrl = await uploadProductImage(file, editId.value || null);
+        }
+
+        const payload = { product_name: name, qty, price, image: imageUrl || null };
         const id = editId.value;
         if (id) {
           await updateProduct(id, payload);
-          showStatus("Producto actualizado.", "success", 3000);
+          showStatus("Product updated.", "success", 3000);
         } else {
           await createProduct(payload);
-          showStatus("Producto creado.", "success", 3000);
+          showStatus("Product created.", "success", 3000);
         }
         resetForm();
         await loadProducts();
       } catch (err) {
-        showStatus("Error al guardar: " + err.message, "error");
+        showStatus("Failed to save: " + err.message, "error");
       } finally {
         btnSave.disabled = false;
       }
@@ -455,32 +647,51 @@
 
     btnCancel.addEventListener("click", resetForm);
 
+    productImage.addEventListener("change", () => {
+      clearPreviewObjectUrl();
+      const file = productImage.files[0];
+      if (!file) {
+        showImagePreview(currentImageUrl);
+        return;
+      }
+      previewObjectUrl = URL.createObjectURL(file);
+      showImagePreview(previewObjectUrl);
+    });
+
+    btnRemoveImage.addEventListener("click", () => {
+      currentImageUrl = null;
+      productImage.value = "";
+      clearPreviewObjectUrl();
+      showImagePreview(null);
+    });
+
     tbody.addEventListener("click", async (e) => {
       const row = e.target.closest("tr");
       if (!row) return;
       const id = row.dataset.id;
 
       if (e.target.classList.contains("btn-edit")) {
-        const cells = row.querySelectorAll("td");
         startEdit({
           id,
-          product_name: cells[2].textContent,
-          qty: cells[3].textContent,
+          product_name: row.dataset.name,
+          qty: row.dataset.qty,
+          price: row.dataset.price,
+          image: row.dataset.image || null,
         });
         return;
       }
 
       if (e.target.classList.contains("btn-delete")) {
-        const name = row.querySelectorAll("td")[2].textContent;
-        if (!confirm('¿Eliminar "' + name + '"?')) return;
+        const name = row.dataset.name;
+        if (!confirm('Delete "' + name + '"?')) return;
 
         try {
           await deleteProduct(id);
           if (editId.value === id) resetForm();
-          showStatus("Producto eliminado.", "success", 3000);
+          showStatus("Product deleted.", "success", 3000);
           await loadProducts();
         } catch (err) {
-          showStatus("Error al eliminar: " + err.message, "error");
+          showStatus("Failed to delete: " + err.message, "error");
         }
       }
     });
