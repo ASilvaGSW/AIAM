@@ -1,0 +1,16 @@
+{
+  "name": "aiam-website",
+  "private": true,
+  "description": "AIAM Technology static site with Netlify Functions for Stripe checkout",
+  "scripts": {
+    "dev": "netlify dev",
+    "functions:ping": "curl -s http://localhost:8888/.netlify/functions/ping"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1",
+    "stripe": "^17.7.0"
+  },
+  "devDependencies": {
+    "netlify-cli": "^20.0.0"
+  }
+}

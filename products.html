@@ -45,6 +45,7 @@
 
     <section class="products-catalog">
       <div class="container">
+        <p class="payment-banner" id="paymentBanner" hidden></p>
         <p class="products-status loading" id="productsStatus">Loading products…</p>
         <div class="products-grid" id="productsGrid" hidden></div>
       </div>
@@ -132,9 +133,14 @@
           <strong id="cartTotalCost">$0.00</strong>
         </div>
         <button type="button" class="btn-clear-cart" id="cartClear">Clear cart</button>
-        <a href="mailto:kenjin@aiam-tech.com?subject=Product%20quote%20request" class="btn-submit cart-request" id="cartRequest">
-          Request quote
-        </a>
+        <div class="cart-actions">
+          <button type="button" class="btn-submit cart-checkout" id="cartCheckout">
+            Pay with Stripe
+          </button>
+          <a href="mailto:kenjin@aiam-tech.com?subject=Product%20quote%20request" class="btn-submit cart-request cart-request--secondary" id="cartRequest">
+            Request quote
+          </a>
+        </div>
       </div>
     </aside>
 

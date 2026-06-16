@@ -4,9 +4,9 @@
   const STORAGE_KEY = "aiam-cart";
   const DEFAULT_PRODUCT_IMAGE = "src/img/card_wire.png";
 
-  const SUPABASE_URL = "https://vysyknzuektohzybfndd.supabase.co";
+  const SUPABASE_URL = "https://eoztsaelpvqhkkgzpkzp.supabase.co";
   const SUPABASE_ANON_KEY =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5c3lrbnp1ZWt0b2h6eWJmbmRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzMzU0MzMsImV4cCI6MjA5NTkxMTQzM30.xhaHbB1i9rUh_NK91YMjqGaAmuPgk2QbNe8uqH9YM0M";
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvenRzYWVscHZxaGtrZ3pwa3pwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2NDA4NjksImV4cCI6MjA5NzIxNjg2OX0.hLQO6WWaEPDUjZSuHXjsWXPVS9zp16GGXTRXx7Lu7o0";
   const PRODUCTS_API = SUPABASE_URL + "/rest/v1/products";
   const API_HEADERS = {
     apikey: SUPABASE_ANON_KEY,
@@ -29,6 +29,9 @@
   const cartTotalCost = document.getElementById("cartTotalCost");
   const cartClear = document.getElementById("cartClear");
   const cartRequest = document.getElementById("cartRequest");
+  const cartCheckout = document.getElementById("cartCheckout");
+  const paymentBanner = document.getElementById("paymentBanner");
+  const CHECKOUT_API = "/.netlify/functions/create-checkout";
 
   function formatCurrency(amount) {
     return new Intl.NumberFormat("en-US", {
@@ -206,6 +209,61 @@
   function clearCart() {
     saveCart([]);
     renderCart();
+  }
+
+  function showPaymentBanner(message, type) {
+    if (!paymentBanner) return;
+    paymentBanner.textContent = message;
+    paymentBanner.className = "payment-banner payment-banner--" + type;
+    paymentBanner.hidden = false;
+  }
+
+  function handlePaymentReturn() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("paid") === "1") {
+      showPaymentBanner("Payment successful. Thank you for your order.", "success");
+      clearCart();
+      window.history.replaceState({}, "", window.location.pathname);
+    } else if (params.get("canceled") === "1") {
+      showPaymentBanner("Checkout canceled. Your cart is still saved.", "canceled");
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }
+
+  async function startStripeCheckout() {
+    const items = loadCart();
+    if (!items.length || !cartCheckout) return;
+
+    cartCheckout.disabled = true;
+    const label = cartCheckout.textContent;
+    cartCheckout.textContent = "Redirecting…";
+
+    try {
+      const response = await fetch(CHECKOUT_API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: items.map(function (item) {
+            return { id: item.id, qty: item.qty };
+          }),
+        }),
+      });
+
+      const data = await response.json().catch(function () {
+        return {};
+      });
+
+      if (!response.ok || !data.url) {
+        throw new Error(data.error || "Could not start checkout");
+      }
+
+      window.location.href = data.url;
+    } catch (err) {
+      console.error("Checkout error:", err);
+      alert(err.message || "Checkout is not available. Try Request quote instead.");
+      cartCheckout.disabled = false;
+      cartCheckout.textContent = label;
+    }
   }
 
   function setCartOpenState(isOpen) {
@@ -404,6 +462,7 @@
   if (cartClose) cartClose.addEventListener("click", closeCart);
   if (cartOverlay) cartOverlay.addEventListener("click", closeCart);
   if (cartClear) cartClear.addEventListener("click", clearCart);
+  if (cartCheckout) cartCheckout.addEventListener("click", startStripeCheckout);
 
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape") closeCart();
@@ -418,6 +477,7 @@
     });
   }
 
+  handlePaymentReturn();
   renderCart();
   loadProducts();
 })();

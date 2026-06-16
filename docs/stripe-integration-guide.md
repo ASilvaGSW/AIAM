@@ -44,16 +44,18 @@ Usuario → products.html (carrito)
 1. Regístrate en [https://dashboard.stripe.com](https://dashboard.stripe.com)
 2. Activa **modo Test** (interruptor arriba a la derecha)
 3. Ve a **Developers → API keys**
-   - `pk_test_...` → clave pública (frontend, si usas Stripe Elements)
-   - `sk_test_...` → clave secreta (solo backend)
+  - `pk_test_...` → clave pública (frontend, si usas Stripe Elements)
+  - `sk_test_...` → clave secreta (solo backend)
 4. Para producción repites con `pk_live_...` y `sk_live_...`
 
 **Tarjetas de prueba**
 
-| Resultado | Número |
-|-----------|--------|
+
+| Resultado    | Número                |
+| ------------ | --------------------- |
 | Pago exitoso | `4242 4242 4242 4242` |
-| Rechazado | `4000 0000 0000 0002` |
+| Rechazado    | `4000 0000 0000 0002` |
+
 
 Usa cualquier fecha futura y cualquier CVC de 3 dígitos.
 
@@ -65,12 +67,14 @@ Usa cualquier fecha futura y cualquier CVC de 3 dígitos.
 
 Cada producto en Supabase tiene su equivalente en Stripe.
 
-| Supabase `products` | Stripe |
-|---------------------|--------|
-| `id` | metadata `product_id` |
-| `product_name` | Product `name` |
-| `price` | Price `unit_amount` (en centavos) |
-| `image` | Product `images[]` |
+
+| Supabase `products` | Stripe                            |
+| ------------------- | --------------------------------- |
+| `id`                | metadata `product_id`             |
+| `product_name`      | Product `name`                    |
+| `price`             | Price `unit_amount` (en centavos) |
+| `image`             | Product `images[]`                |
+
 
 Agrega una columna en Supabase:
 
@@ -95,11 +99,13 @@ El backend lee el precio de Supabase al crear el checkout y usa `price_data` din
 
 El HTML estático no puede llamar a Stripe con la secret key. Opciones:
 
-| Opción | Dificultad | Encaja con tu stack |
-|--------|------------|---------------------|
-| **Supabase Edge Function** | Media | Muy bien (ya usas Supabase) |
-| **Vercel / Netlify serverless** | Media | Bien si despliegas ahí |
-| **Node/Express pequeño** | Media | Flexible |
+
+| Opción                          | Dificultad | Encaja con tu stack         |
+| ------------------------------- | ---------- | --------------------------- |
+| **Supabase Edge Function**      | Media      | Muy bien (ya usas Supabase) |
+| **Vercel / Netlify serverless** | Media      | Bien si despliegas ahí      |
+| **Node/Express pequeño**        | Media      | Flexible                    |
+
 
 ### Ejemplo: Edge Function `create-checkout`
 
@@ -335,12 +341,14 @@ CREATE TABLE order_items (
 
 ## 8. Seguridad (crítico)
 
-| Hacer | No hacer |
-|-------|----------|
-| Validar precio y stock en el servidor | Confiar en el precio del carrito del navegador |
-| Usar `sk_` solo en Edge Function | Poner `sk_` en `products.js` o HTML |
-| Verificar pagos con webhook | Marcar pedido como pagado solo al redirigir a `success_url` |
-| Usar `service_role` solo en backend | Exponer `service_role` al frontend |
+
+| Hacer                                 | No hacer                                                    |
+| ------------------------------------- | ----------------------------------------------------------- |
+| Validar precio y stock en el servidor | Confiar en el precio del carrito del navegador              |
+| Usar `sk_` solo en Edge Function      | Poner `sk_` en `products.js` o HTML                         |
+| Verificar pagos con webhook           | Marcar pedido como pagado solo al redirigir a `success_url` |
+| Usar `service_role` solo en backend   | Exponer `service_role` al frontend                          |
+
 
 ---
 
@@ -384,3 +392,4 @@ Copia el `whsec_...` que muestra y úsalo como `STRIPE_WEBHOOK_SECRET` en local.
 - [Stripe Testing](https://docs.stripe.com/testing)
 - [Supabase Edge Functions](https://supabase.com/docs/guides/functions)
 - [Stripe Webhooks](https://docs.stripe.com/webhooks)
+
