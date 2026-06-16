@@ -1,19 +1,19 @@
 -- ============================================================
--- AIAM — Setup completo para una cuenta/proyecto NUEVO de Supabase
--- Ejecutar en: Supabase Dashboard → SQL Editor → New query → Run
+-- AIAM — Full setup for a NEW Supabase account/project
+-- Run in: Supabase Dashboard → SQL Editor → New query → Run
 -- ============================================================
--- Este script deja el proyecto nuevo listo:
---   1. Crea la tabla public.products
---   2. Crea el bucket de Storage "Img" (público)
---   3. Aplica las políticas RLS (lectura pública / escritura autenticada)
+-- This script prepares the new project:
+--   1. Creates the public.products table
+--   2. Creates the Storage bucket "Img" (public)
+--   3. Applies RLS policies (public read / authenticated write)
 --
--- DESPUÉS de correr esto:
---   - Crea un usuario admin: Authentication → Users → Add user
---   - Copia los datos viejos (ver guía de migración)
---   - Actualiza las credenciales en el código (URL + anon key + service role)
+-- AFTER running this:
+--   - Create an admin user: Authentication → Users → Add user
+--   - Copy data from the old project (see migration guide)
+--   - Update credentials in the codebase (URL + anon key + service role)
 -- ============================================================
 
--- ----- 1. Tabla products -----
+-- ----- 1. Products table -----
 create table if not exists public.products (
   id            bigint generated always as identity primary key,
   created_at    timestamptz not null default now(),
@@ -24,16 +24,16 @@ create table if not exists public.products (
   stripe_price_id text
 );
 
--- ----- 2. Bucket de Storage "Img" (público) -----
+-- ----- 2. Storage bucket "Img" (public) -----
 insert into storage.buckets (id, name, public)
 values ('Img', 'Img', true)
 on conflict (id) do update set public = true;
 
 -- ============================================================
--- 3. Políticas de seguridad (RLS)
+-- 3. Security policies (RLS)
 -- ============================================================
 
--- ----- Tabla products -----
+-- ----- Products table -----
 alter table public.products enable row level security;
 
 drop policy if exists "Public read products" on public.products;
@@ -42,14 +42,14 @@ drop policy if exists "Authenticated insert products" on public.products;
 drop policy if exists "Authenticated update products" on public.products;
 drop policy if exists "Authenticated delete products" on public.products;
 
--- Catálogo (products.html) — solo lectura
+-- Catalog (products.html) — read only
 create policy "Public read products"
 on public.products
 for select
 to public
 using (true);
 
--- CRUD (crud_products.html) — escritura solo con sesión iniciada
+-- CRUD (crud_products.html) — write only when signed in
 create policy "Authenticated insert products"
 on public.products
 for insert
