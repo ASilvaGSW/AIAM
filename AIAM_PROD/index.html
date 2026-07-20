@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AIAM Technology LLC — Building Smart Machines for Manufacturing</title>
+  <meta name="description" content="AIAM Technology LLC develops machine-side automation concepts including AI-assisted assembly, low-cost vision inspection, and practical support technologies for manufacturers." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!-- ===== Header ===== -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="#home" class="brand" data-view="home" aria-label="AIAM Technology home">
+        <img src="src/img/Logo_5_19_2026.png" alt="AIAM Technology" class="brand-logo" />
+      </a>
+
+      <!--
+        Navigation disabled for the v1.2 release (single landing page).
+        Includes the mobile hamburger toggle. Keep this block for a future
+        multi-page version — just uncomment to restore Home/About/Technology/Contact.
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+
+      <nav class="main-nav" id="mainNav">
+        <a href="#home" class="nav-link active" data-view="home">Home</a>
+        <a href="#about" class="nav-link" data-view="about">About</a>
+        <a href="#technology" class="nav-link" data-view="technology">Technology</a>
+        <a href="#contact" class="nav-link" data-view="contact">Contact</a>
+      </nav>
+      -->
+    </div>
+  </header>
+
+  <main>
+    <!-- ===================== HOME ===================== -->
+    <section class="view active" id="view-home" data-view="home">
+      <section class="hero">
+        <div class="container hero-grid">
+          <div class="hero-content">
+            <p class="eyebrow">AIAM Technology LLC</p>
+            <h1 class="hero-title">Building Smart Machines<br />for Manufacturing</h1>
+            <p class="hero-desc">
+              AIAM Technology LLC develops machine-side automation concepts
+              including AI-assisted assembly, low-cost vision inspection, and
+              practical support technologies for manufacturers.
+            </p>
+
+            <p class="tagline">
+              <span class="tag-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2l8 3v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5l8-3z" />
+                </svg>
+              </span>
+              Factories buy certainty, not ambition.
+            </p>
+
+            <div class="contact-row">
+              <a class="contact-item" href="mailto:kenjin@aiam-tech.com">
+                <span class="contact-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="4" width="20" height="16" rx="2" />
+                    <path d="M2 6l10 7 10-7" />
+                  </svg>
+                </span>
+                kenjin@aiam-tech.com
+              </a>
+              <span class="contact-divider" aria-hidden="true"></span>
+              <span class="contact-item">
+                <span class="contact-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 21s7-6.5 7-12a7 7 0 10-14 0c0 5.5 7 12 7 12z" />
+                    <circle cx="12" cy="9" r="2.5" />
+                  </svg>
+                </span>
+                Mission, Texas / Reynosa, Mexico region
+              </span>
+            </div>
+          </div>
+
+          <div class="hero-media">
+            <div class="hero-image-wrap">
+              <img src="src/img/hero_machine.png" alt="Smart manufacturing machine on the factory floor" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Feature Cards -->
+      <section class="features">
+        <div class="container cards-grid">
+          <article class="card">
+            <div class="card-photo">
+              <img src="src/img/card_wire.png" alt="Wire harness automation machine" />
+            </div>
+            <div class="card-body">
+              <div class="card-head">
+                <span class="hex-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M12 2l8.5 5v10L12 22 3.5 17V7L12 2z" />
+                    <path d="M7 12h4M13 9l4 3-4 3" />
+                  </svg>
+                </span>
+                <h3>Wire Harness<br />Automation</h3>
+              </div>
+              <p>
+                Modular solutions for wire cutting, stripping, crimping,
+                inserting, and testing—built for reliability and ease of
+                integration.
+              </p>
+            </div>
+          </article>
+
+          <article class="card">
+            <div class="card-photo">
+              <img src="src/img/card_vision.png" alt="AI vision inspection system" />
+            </div>
+            <div class="card-body">
+              <div class="card-head">
+                <span class="hex-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M12 2l8.5 5v10L12 22 3.5 17V7L12 2z" />
+                    <path d="M7 12s2-3 5-3 5 3 5 3-2 3-5 3-5-3-5-3z" />
+                    <circle cx="12" cy="12" r="1.4" />
+                  </svg>
+                </span>
+                <h3>AI Vision<br />Inspection</h3>
+              </div>
+              <p>
+                AI-assisted vision systems for defect detection, presence
+                verification, and assembly validation at the machine-side.
+              </p>
+            </div>
+          </article>
+
+          <article class="card">
+            <div class="card-photo">
+              <img src="src/img/card_backup.png" alt="Machine power backup unit" />
+            </div>
+            <div class="card-body">
+              <div class="card-head">
+                <span class="hex-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M12 2l8.5 5v10L12 22 3.5 17V7L12 2z" />
+                    <path d="M13 7l-4 6h3l-1 4 4-6h-3l1-4z" fill="currentColor" stroke="none" />
+                  </svg>
+                </span>
+                <h3>Machine Power<br />Backup</h3>
+              </div>
+              <p>
+                Uninterruptible power solutions that keep machines safe,
+                processes protected, and production moving.
+              </p>
+            </div>
+          </article>
+        </div>
+      </section>
+    </section>
+
+    <!-- ===================== ABOUT ===================== -->
+    <section class="view" id="view-about" data-view="about">
+      <div class="container page">
+        <div class="page-head">
+          <p class="eyebrow">About</p>
+          <h2 class="page-title">Practical automation, built for the floor</h2>
+        </div>
+        <div class="about-grid">
+          <div class="about-text">
+            <p>
+              AIAM Technology LLC is a machine-side automation company focused on
+              solutions that earn their place on the production line. We design
+              modular systems that integrate cleanly into existing processes —
+              no over-promising, no science projects.
+            </p>
+            <p>
+              Operating across the <strong>Mission, Texas / Reynosa, Mexico</strong>
+              region, we sit at the center of one of North America's busiest
+              manufacturing corridors, close to the customers and suppliers we serve.
+            </p>
+            <p class="about-tag">
+              <span class="tag-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2l8 3v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5l8-3z" />
+                </svg>
+              </span>
+              Factories buy certainty, not ambition.
+            </p>
+          </div>
+          <ul class="values-list">
+            <li>
+              <span class="strip-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2l8 3v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5l8-3z" />
+                  <path d="M9 12l2 2 4-4" />
+                </svg>
+              </span>
+              <div><strong>Engineered for Reliability</strong><span>Designed to run shift after shift.</span></div>
+            </li>
+            <li>
+              <span class="strip-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="3.2" />
+                  <path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" />
+                </svg>
+              </span>
+              <div><strong>Modular by Design</strong><span>Scale and adapt without re-tooling.</span></div>
+            </li>
+            <li>
+              <span class="strip-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 21V3M3 21h18" />
+                  <rect x="7" y="12" width="3" height="6" />
+                  <rect x="12" y="8" width="3" height="10" />
+                  <rect x="17" y="5" width="3" height="13" />
+                </svg>
+              </span>
+              <div><strong>Built for Manufacturability</strong><span>Serviceable, repeatable, production-ready.</span></div>
+            </li>
+            <li>
+              <span class="strip-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="9" cy="8" r="3" />
+                  <path d="M3 20c0-3 3-5 6-5s6 2 6 5" />
+                  <path d="M16 6a3 3 0 010 6M18 20c0-2.5-1.5-4.2-3.5-4.8" />
+                </svg>
+              </span>
+              <div><strong>Practical Support, Real Results</strong><span>Hands-on help that keeps lines moving.</span></div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== TECHNOLOGY ===================== -->
+    <section class="view" id="view-technology" data-view="technology">
+      <div class="container page">
+        <div class="page-head">
+          <p class="eyebrow">Technology</p>
+          <h2 class="page-title">Machine-side systems that do the work</h2>
+        </div>
+        <div class="tech-grid">
+          <article class="tech-card">
+            <div class="tech-photo"><img src="src/img/card_wire.png" alt="Wire harness automation" /></div>
+            <div class="tech-body">
+              <h3>Wire Harness Automation</h3>
+              <p>
+                Modular cells for cutting, stripping, crimping, inserting, and
+                testing. Built to integrate into existing harness lines and to
+                deliver repeatable quality at volume.
+              </p>
+            </div>
+          </article>
+          <article class="tech-card">
+            <div class="tech-photo"><img src="src/img/card_vision.png" alt="AI vision inspection" /></div>
+            <div class="tech-body">
+              <h3>AI Vision Inspection</h3>
+              <p>
+                Low-cost, AI-assisted vision for defect detection, presence
+                verification, and assembly validation — catching issues at the
+                machine before they move downstream.
+              </p>
+            </div>
+          </article>
+          <article class="tech-card">
+            <div class="tech-photo"><img src="src/img/card_backup.png" alt="Machine power backup" /></div>
+            <div class="tech-body">
+              <h3>Machine Power Backup</h3>
+              <p>
+                Uninterruptible power solutions that protect machines and
+                in-process work during outages, keeping production safe and
+                recoverable.
+              </p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== CONTACT ===================== -->
+    <section class="view" id="view-contact" data-view="contact">
+      <div class="container page">
+        <div class="page-head">
+          <p class="eyebrow">Contact</p>
+          <h2 class="page-title">Let's talk about your line</h2>
+        </div>
+        <div class="contact-grid">
+          <div class="contact-info">
+            <p class="contact-lead">
+              Tell us what you're trying to automate. We'll tell you, honestly,
+              whether and how we can help.
+            </p>
+            <a class="contact-block" href="mailto:kenjin@aiam-tech.com">
+              <span class="contact-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="4" width="20" height="16" rx="2" />
+                  <path d="M2 6l10 7 10-7" />
+                </svg>
+              </span>
+              <span><strong>Email</strong>kenjin@aiam-tech.com</span>
+            </a>
+            <div class="contact-block">
+              <span class="contact-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 21s7-6.5 7-12a7 7 0 10-14 0c0 5.5 7 12 7 12z" />
+                  <circle cx="12" cy="9" r="2.5" />
+                </svg>
+              </span>
+              <span><strong>Region</strong>Mission, Texas / Reynosa, Mexico</span>
+            </div>
+          </div>
+
+          <form class="contact-form" id="contactForm" action="https://formspree.io/f/xvzyywkz" method="POST" novalidate>
+            <div class="field">
+              <label for="cf-name">Name</label>
+              <input id="cf-name" name="name" type="text" placeholder="Your name" required />
+            </div>
+            <div class="field">
+              <label for="cf-email">Email</label>
+              <input id="cf-email" name="email" type="email" placeholder="you@company.com" required />
+            </div>
+            <div class="field">
+              <label for="cf-message">Message</label>
+              <textarea id="cf-message" name="message" rows="4" placeholder="What would you like to automate?" required></textarea>
+            </div>
+            <button type="submit" class="btn-submit">Send Message</button>
+            <p class="form-note" id="formNote" hidden></p>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== Bottom value strip ===== -->
+  <footer class="value-strip">
+    <div class="container strip-inner">
+      <div class="strip-item">
+        <span class="strip-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2l8 3v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5l8-3z" />
+            <path d="M9 12l2 2 4-4" />
+          </svg>
+        </span>
+        Engineered for Reliability
+      </div>
+      <span class="strip-sep"></span>
+      <div class="strip-item">
+        <span class="strip-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3.2" />
+            <path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" />
+          </svg>
+        </span>
+        Modular by Design
+      </div>
+      <span class="strip-sep"></span>
+      <div class="strip-item">
+        <span class="strip-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 21V3M3 21h18" />
+            <rect x="7" y="12" width="3" height="6" />
+            <rect x="12" y="8" width="3" height="10" />
+            <rect x="17" y="5" width="3" height="13" />
+          </svg>
+        </span>
+        Built for Manufacturability
+      </div>
+      <span class="strip-sep"></span>
+      <div class="strip-item">
+        <span class="strip-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="9" cy="8" r="3" />
+            <path d="M3 20c0-3 3-5 6-5s6 2 6 5" />
+            <path d="M16 6a3 3 0 010 6M18 20c0-2.5-1.5-4.2-3.5-4.8" />
+          </svg>
+        </span>
+        Practical Support, Real Results
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
