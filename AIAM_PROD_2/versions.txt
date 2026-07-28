@@ -1,0 +1,7 @@
+1.1 Static web version with 4 panels and a form controlled by Spreeform
+1.2 Need to disable temporaly the navigation panels and start adding main domain, also check for responssiveness on laptop screen 
+1.2.1 Testing Supabase
+1.3 Redesigned the hidden pages (About / Technology / Contact) based on the new design strategy documents and infographics from Resources; pages stay hidden until the navigation is re-enabled
+1.4 Re-enabled the main navigation (Home / About / Technology / Contact)
+1.5 Visual polish pass on About / Technology / Contact: shared section headers with accent rule, positioning block, captioned machine figure, spec chips per design pillar, dark contact panel and expanded form
+1.6 Added quote.html — quotation builder that mirrors Quotes/AIAM_Quotation_Template.xlsx: live editor, auto totals, auto quote numbering, localStorage draft, JSON import/export, and a Letter-size print/PDF layout. Also fixed the header logo filename casing in index.html

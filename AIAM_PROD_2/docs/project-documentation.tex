@@ -1,0 +1,569 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  urlcolor=blue!60!black,
+  citecolor=blue!60!black
+}
+
+\definecolor{codebg}{RGB}{245,245,245}
+\definecolor{codeframe}{RGB}{220,220,220}
+
+\lstdefinestyle{projectstyle}{
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{codeframe},
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  tabsize=2
+}
+
+\lstset{style=projectstyle}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{AIAM Technology LLC}
+\lhead{Project Documentation}
+\cfoot{\thepage}
+
+\title{\textbf{AIAM Technology LLC}\\[0.4em]
+\large Website Project Documentation}
+\author{AIAM Technology LLC}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+\vfill
+\begin{center}
+\textit{Formal website preview --- full launch planned for June 2026}
+\end{center}
+\newpage
+
+\tableofcontents
+\newpage
+
+%==============================================================================
+\section{Introduction}
+%==============================================================================
+
+This document describes the AIAM Technology LLC marketing website: its purpose,
+architecture, source layout, runtime behavior, deployment on \textbf{Netlify},
+and contact-form handling through \textbf{Formspree}.
+
+The site is a static, client-side web application built with HTML, CSS, and
+JavaScript. It presents four primary sections (Home, About, Technology, and
+Contact) within a single page, using hash-based view switching so navigation
+feels like separate tabs without full page reloads.
+
+\subsection{Project Goals}
+
+\begin{itemize}[noitemsep]
+  \item Present AIAM's machine-side automation capabilities to manufacturers.
+  \item Provide a professional landing experience aligned with the approved
+        visual mockup (\texttt{src/img/aiam007.png}).
+  \item Offer a working contact channel before the formal website launch.
+  \item Deploy easily as static files on Netlify with Git-based continuous
+        deployment.
+\end{itemize}
+
+\subsection{Repository}
+
+\begin{itemize}[noitemsep]
+  \item \textbf{GitHub:} \url{https://github.com/ASilvaGSW/AIAM.git}
+  \item \textbf{Default branch:} \texttt{main}
+  \item \textbf{Contact email (public):} \texttt{kenjin@aiam-tech.com}
+  \item \textbf{Operating region:} Mission, Texas / Reynosa, Mexico
+\end{itemize}
+
+%==============================================================================
+\section{Technology Stack}
+%==============================================================================
+
+\begin{table}[h]
+  \centering
+  \begin{tabular}{@{}ll@{}}
+    \toprule
+    \textbf{Layer} & \textbf{Technology} \\
+    \midrule
+    Markup       & HTML5 (semantic sections, ARIA labels) \\
+    Styling      & CSS3 (Flexbox, Grid, custom properties, media queries) \\
+    Scripting    & Vanilla JavaScript (ES5-compatible IIFE) \\
+    Typography   & Google Fonts --- Inter \\
+    Hosting      & Netlify (static site hosting) \\
+    Form backend & Formspree (\url{https://formspree.io}) \\
+    Version control & Git / GitHub \\
+    \bottomrule
+  \end{tabular}
+  \caption{Technology stack summary}
+\end{table}
+
+No build step, package manager, or server-side runtime is required. The site
+can be opened locally by serving the repository root or by opening
+\texttt{index.html} through a local HTTP server (recommended for Formspree
+testing).
+
+%==============================================================================
+\section{Project Structure}
+%==============================================================================
+
+The publish root for Netlify is the repository root. \texttt{index.html} must
+remain at the top level so Netlify serves it as the site entry point.
+
+\begin{lstlisting}
+AIAM/
+|-- index.html          # Site entry point and all page views
+|-- css/
+|   `-- styles.css      # Global layout, components, responsive rules
+|-- js/
+|   `-- main.js         # Navigation, view switching, Formspree submit
+|-- src/
+|   `-- img/            # Brand and content images
+|       |-- Logo_5_19_2026.png
+|       |-- aiam007.png           # Original design mockup (reference)
+|       |-- hero_machine.png      # Hero section image
+|       |-- card_wire.png         # Wire Harness card thumbnail
+|       |-- card_vision.png       # AI Vision card thumbnail
+|       `-- card_backup.png       # Power Backup card thumbnail
+`-- docs/
+    `-- project-documentation.tex # This document
+\end{lstlisting}
+
+\subsection{File Responsibilities}
+
+\begin{description}[style=nextline]
+  \item[\texttt{index.html}]
+    Defines the header, four view sections (\texttt{\#view-home},
+    \texttt{\#view-about}, \texttt{\#view-technology}, \texttt{\#view-contact}),
+    the shared footer value strip, and the contact form markup.
+
+  \item[\texttt{css/styles.css}]
+    Implements the visual design, sticky header, hero diagonal image clip,
+    feature cards, inner-page layouts, mobile navigation, footer stickiness,
+    and the fit-to-viewport layout for large desktop screens.
+
+  \item[\texttt{js/main.js}]
+    Handles mobile menu toggle, client-side view routing via \texttt{data-view}
+    attributes, URL hash updates, and asynchronous Formspree form submission.
+
+  \item[\texttt{src/img/}]
+    Static image assets. Hero and card images were derived from the approved
+    mockup for visual consistency.
+\end{description}
+
+%==============================================================================
+\section{Site Architecture and Navigation}
+%==============================================================================
+
+\subsection{Single-Page, Multi-View Model}
+
+Instead of separate HTML files per section, the application uses a
+\textbf{view-switching} pattern:
+
+\begin{enumerate}[noitemsep]
+  \item Each major section is a \texttt{<section class="view">} element with a
+        \texttt{data-view} attribute (\texttt{home}, \texttt{about},
+        \texttt{technology}, \texttt{contact}).
+  \item Only the view with class \texttt{active} is displayed.
+  \item Navigation links, the logo, and in-page CTAs carry matching
+        \texttt{data-view} attributes.
+  \item JavaScript intercepts clicks, prevents default navigation, and toggles
+        the active view.
+  \item The browser URL hash is updated (e.g.\ \texttt{\#contact}) using
+        \texttt{history.replaceState}, enabling direct links and refresh
+        persistence.
+\end{enumerate}
+
+\subsection{Page Content Overview}
+
+\begin{table}[h]
+  \centering
+  \small
+  \begin{tabular}{@{}p{2.2cm}p{10cm}@{}}
+    \toprule
+    \textbf{View} & \textbf{Content} \\
+    \midrule
+    Home &
+    Hero with company headline, description, ``Formal Website Coming June 2026''
+    badge, tagline, contact row, hero machine image, and three feature cards
+    (Wire Harness, AI Vision, Machine Power Backup). \\
+    About &
+    Company mission, regional presence, tagline, and four value propositions
+    with icons. \\
+    Technology &
+    Expanded descriptions of the three core technology areas with larger cards. \\
+    Contact &
+    Contact information and a message form (name, email, message) integrated
+    with Formspree. \\
+    \bottomrule
+  \end{tabular}
+  \caption{View sections}
+\end{table}
+
+\subsection{Shared Footer}
+
+A dark value strip appears on every view, listing:
+
+\begin{itemize}[noitemsep]
+  \item Engineered for Reliability
+  \item Modular by Design
+  \item Built for Manufacturability
+  \item Practical Support, Real Results
+\end{itemize}
+
+The layout uses a flex column on \texttt{body} so the footer remains at the
+bottom of the viewport on desktop, even when inner-page content is shorter
+than the screen height.
+
+%==============================================================================
+\section{Responsive Design and Layout Behavior}
+%==============================================================================
+
+\subsection{Breakpoints}
+
+\begin{itemize}[noitemsep]
+  \item \textbf{Desktop / laptop ($\geq$ 961px):} Two-column hero, three-column
+        card grids, horizontal navigation.
+  \item \textbf{Tablet ($\leq$ 960px):} Stacked hero, single-column cards and
+        inner-page grids.
+  \item \textbf{Mobile ($\leq$ 720px):} Hamburger menu, increased side padding,
+        vertical card layout, full-width submit button.
+  \item \textbf{Small mobile ($\leq$ 400px):} Further reduced typography and
+        padding.
+\end{itemize}
+
+\subsection{Fit-to-Viewport Mode (Large Screens)}
+
+On viewports with \texttt{min-width: 961px} and \texttt{min-height: 740px},
+additional CSS rules apply:
+
+\begin{itemize}[noitemsep]
+  \item \texttt{body} is locked to \texttt{100vh} with \texttt{overflow: hidden}.
+  \item The Home view compresses vertical spacing so hero, cards, header, and
+        footer fit without scrolling.
+  \item Inner views may scroll internally if content exceeds available height.
+\end{itemize}
+
+On smaller or shorter screens, normal document scrolling is used instead.
+
+%==============================================================================
+\section{JavaScript Behavior (\texttt{main.js})}
+%==============================================================================
+
+\subsection{Mobile Navigation}
+
+The hamburger button toggles the \texttt{open} class on \texttt{\#mainNav} and
+updates \texttt{aria-expanded} for accessibility.
+
+\subsection{View Routing}
+
+The \texttt{showView(name)} function:
+
+\begin{itemize}[noitemsep]
+  \item Activates the matching \texttt{.view} section.
+  \item Updates active state on \texttt{.nav-link} elements.
+  \item Resets scroll on the newly shown view.
+  \item Closes the mobile menu.
+  \item Writes the hash fragment to the URL.
+\end{itemize}
+
+On initial load, if the URL contains a valid hash (e.g.\ \texttt{\#technology}),
+that view is opened automatically.
+
+\subsection{Contact Form Submission}
+
+The contact form uses the Fetch API to POST to Formspree without leaving the
+page. See Section~\ref{sec:formspree} for backend details.
+
+%==============================================================================
+\section{Hosting on Netlify}
+%==============================================================================
+
+Netlify is a static hosting platform well suited to this project because the
+site consists entirely of HTML, CSS, JavaScript, and image assets with no
+server-side code.
+
+\subsection{Why \texttt{index.html} Is at the Repository Root}
+
+Netlify (and most static hosts) treat the configured \textbf{publish directory}
+as the web root. The file \texttt{index.html} in that directory becomes the
+default document for \texttt{/}. Placing \texttt{index.html} at the repository
+root ensures:
+
+\begin{itemize}[noitemsep]
+  \item Correct resolution of relative paths such as \texttt{css/styles.css},
+        \texttt{js/main.js}, and \texttt{src/img/...}.
+  \item No extra redirect or rewrite rules are needed for the home page.
+  \item Asset URLs remain simple and portable.
+\end{itemize}
+
+\subsection{Recommended Netlify Configuration}
+
+\begin{table}[h]
+  \centering
+  \begin{tabular}{@{}ll@{}}
+    \toprule
+    \textbf{Setting} & \textbf{Value} \\
+    \midrule
+    Publish directory & \texttt{/} (repository root) \\
+    Build command     & \emph{(none)} \\
+    Production branch & \texttt{main} \\
+    \bottomrule
+  \end{tabular}
+  \caption{Typical Netlify site settings for this project}
+\end{table}
+
+Because there is no build pipeline, Netlify deploys files as-is after each
+push to the connected Git branch.
+
+\subsection{Deployment Workflow (Git Integration)}
+
+\begin{enumerate}
+  \item Connect the Netlify site to the GitHub repository
+        \url{https://github.com/ASilvaGSW/AIAM.git}.
+  \item Set the production branch to \texttt{main}.
+  \item Confirm the publish directory is the repository root.
+  \item Push commits to \texttt{main}; Netlify triggers an automatic deploy.
+  \item Review the deploy log in the Netlify dashboard if a deployment fails.
+  \item Optionally assign a custom domain (e.g.\ \texttt{aiam-tech.com}) under
+        \textbf{Domain management} and configure DNS with Netlify or an external
+        registrar.
+\end{enumerate}
+
+\subsection{Optional: \texttt{netlify.toml}}
+
+Although not required, a minimal \texttt{netlify.toml} at the repository root
+can document deployment settings explicitly:
+
+\begin{lstlisting}
+[build]
+  publish = "."
+  command = ""
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+\end{lstlisting}
+
+This file is optional; equivalent settings can be configured entirely in the
+Netlify UI.
+
+\subsection{Local Preview Before Deploy}
+
+To approximate the Netlify environment locally:
+
+\begin{lstlisting}[language=bash]
+# Using Python (if installed)
+python -m http.server 8080
+
+# Or using Node npx
+npx serve .
+\end{lstlisting}
+
+Then open \url{http://localhost:8080}. Use HTTP (not \texttt{file://}) when
+testing Formspree submissions.
+
+\subsection{Netlify Considerations for This Project}
+
+\begin{itemize}
+  \item \textbf{HTTPS:} Netlify provides free TLS certificates; Formspree works
+        over HTTPS in production.
+  \item \textbf{SPA-style hashes:} Hash routes (\texttt{\#about}, etc.) do not
+        require special Netlify redirects because routing is handled client-side.
+  \item \textbf{Form submissions:} Forms are sent directly from the browser to
+        Formspree; Netlify does not process form data unless Netlify Forms is
+        enabled separately (not used in this project).
+  \item \textbf{Caching:} After CSS/JS updates, users may need a hard refresh
+        (\Ctrl+Shift+R) if assets appear stale due to browser cache.
+\end{itemize}
+
+%==============================================================================
+\section{Form Collection with Formspree}
+\label{sec:formspree}
+%==============================================================================
+
+Formspree is a third-party service that receives HTML form submissions and
+forwards them by email without requiring a custom backend.
+
+\subsection{Endpoint}
+
+The contact form posts to:
+
+\begin{center}
+\url{https://formspree.io/f/xvzyywkz}
+\end{center}
+
+This endpoint is configured in \texttt{index.html}:
+
+\begin{lstlisting}
+<form class="contact-form" id="contactForm"
+      action="https://formspree.io/f/xvzyywkz"
+      method="POST" novalidate>
+\end{lstlisting}
+
+\subsection{Form Fields}
+
+\begin{table}[h]
+  \centering
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    \textbf{Field name} & \textbf{Input type} & \textbf{Required} \\
+    \midrule
+    \texttt{name}    & text     & Yes \\
+    \texttt{email}   & email    & Yes \\
+    \texttt{message} & textarea & Yes \\
+    \bottomrule
+  \end{tabular}
+  \caption{Contact form fields sent to Formspree}
+\end{table}
+
+Field names must match Formspree expectations. The \texttt{email} field is
+used by Formspree for reply-to addressing and validation.
+
+\subsection{Submission Method (AJAX via Fetch)}
+
+Rather than a traditional full-page POST, \texttt{main.js} intercepts submit
+events and sends data asynchronously:
+
+\begin{lstlisting}
+fetch(form.action, {
+  method: "POST",
+  body: new FormData(form),
+  headers: { Accept: "application/json" }
+})
+\end{lstlisting}
+
+Benefits of this approach:
+
+\begin{itemize}[noitemsep]
+  \item The user stays on the Contact view (consistent with SPA navigation).
+  \item Success and error messages appear inline below the submit button.
+  \item The submit button shows a ``Sending\ldots'' state and is disabled
+        during the request.
+\end{itemize}
+
+\subsection{User Feedback}
+
+\begin{itemize}[noitemsep]
+  \item \textbf{Success:} ``Thanks --- your message has been sent. We'll get
+        back to you soon.'' The form is reset.
+  \item \textbf{Validation error:} Browser-native validation via
+        \texttt{checkValidity()} before submit.
+  \item \textbf{Formspree error:} Server error messages are displayed when
+        Formspree returns JSON error details.
+  \item \textbf{Network error:} User is prompted to retry or email directly.
+\end{itemize}
+
+\subsection{Formspree Account Setup}
+
+\begin{enumerate}
+  \item Create or sign in to a Formspree account at \url{https://formspree.io}.
+  \item Create a form and note the form ID (\texttt{xvzyywkz} in this project).
+  \item Set the notification email address where submissions should be delivered.
+  \item On the \textbf{first real submission}, Formspree typically sends a
+        confirmation email to verify the form endpoint --- approve it to activate
+        delivery.
+  \item Optionally enable spam filtering (reCAPTCHA, honeypot) in the Formspree
+        dashboard for production hardening.
+\end{enumerate}
+
+\subsection{Testing Checklist}
+
+\begin{itemize}
+  \item Serve the site over HTTP/HTTPS (not \texttt{file://}).
+  \item Submit a test message from the Contact view.
+  \item Confirm receipt in the Formspree dashboard and notification inbox.
+  \item Test invalid email and empty fields to verify client-side validation.
+  \item Test from the live Netlify URL after deployment.
+\end{itemize}
+
+\subsection{Security and Privacy Notes}
+
+\begin{itemize}[noitemsep]
+  \item The Formspree endpoint URL is public in client-side code; this is normal
+        for static sites. Abuse mitigation should be configured in Formspree.
+  \item Do not embed API secrets in frontend code; only the public form endpoint
+        is used.
+  \item Consider adding a privacy notice if required by jurisdiction or company
+        policy before the formal launch.
+\end{itemize}
+
+%==============================================================================
+\section{Maintenance and Future Work}
+%==============================================================================
+
+\subsection{Routine Updates}
+
+\begin{itemize}[noitemsep]
+  \item Edit content in \texttt{index.html} for copy changes.
+  \item Edit \texttt{css/styles.css} for layout and visual updates.
+  \item Replace images in \texttt{src/img/} keeping filenames or updating HTML
+        references accordingly.
+  \item Commit and push to \texttt{main} to trigger Netlify redeployment.
+\end{itemize}
+
+\subsection{Planned for Formal Launch (June 2026)}
+
+\begin{itemize}[noitemsep]
+  \item Expanded content and dedicated pages if moving beyond single-page views.
+  \item Custom domain and production SEO metadata.
+  \item Analytics integration (e.g.\ Netlify Analytics, Plausible, or GA4).
+  \item Enhanced Formspree configuration (spam protection, autoresponders).
+  \item Removal of ``Formal Website Coming June 2026'' preview messaging.
+\end{itemize}
+
+\subsection{Troubleshooting}
+
+\begin{description}[style=nextline]
+  \item[Styles or scripts not loading on Netlify]
+    Verify \texttt{index.html} is at the publish root and paths use
+    \texttt{css/...} and \texttt{js/...} without \texttt{../}.
+
+  \item[Form submissions fail locally]
+    Use a local HTTP server; Formspree may reject requests from
+    \texttt{file://} origins.
+
+  \item[Form works locally but not on Netlify]
+    Confirm the Formspree form is activated and the site URL is allowed if
+    domain restrictions are enabled in Formspree.
+
+  \item[Footer not at bottom on desktop]
+    Ensure \texttt{body} flex layout rules in \texttt{styles.css} are intact
+    and not overridden by custom edits.
+
+  \item[Mobile layout too tight]
+    Check \texttt{@media (max-width: 720px)} rules; container horizontal
+    padding is controlled by \texttt{.container}.
+\end{description}
+
+%==============================================================================
+\section{Conclusion}
+%==============================================================================
+
+The AIAM Technology LLC website is a lightweight static application optimized
+for Netlify deployment and Formspree-powered contact collection. Its structure
+keeps operational complexity low while supporting a polished multi-section
+experience on desktop and mobile. This document should serve as the primary
+reference for developers maintaining, deploying, and extending the project
+through the June 2026 formal launch.
+
+\end{document}

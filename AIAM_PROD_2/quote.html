@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AIAM Technology LLC — Quotation Builder</title>
+  <meta name="description" content="Internal tool to build, preview, and print AIAM Technology quotations." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/quote.css" />
+</head>
+<body>
+  <!-- ===== App bar ===== -->
+  <header class="app-bar">
+    <div class="app-bar-left">
+      <a href="index.html" class="app-back" title="Back to site">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M15 18l-6-6 6-6" />
+        </svg>
+      </a>
+      <img src="src/img/logo_5_19_2026.png" alt="AIAM Technology" class="app-logo" />
+      <span class="app-title">Quotation Builder</span>
+    </div>
+
+    <div class="app-bar-right">
+      <span class="save-state" id="saveState" role="status" aria-live="polite"></span>
+      <input type="file" id="fileImport" accept="application/json,.json" hidden />
+      <button type="button" class="btn" id="btnImport">Import</button>
+      <button type="button" class="btn" id="btnExport">Export</button>
+      <button type="button" class="btn" id="btnNew">New quote</button>
+      <button type="button" class="btn btn-primary" id="btnPrint">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 9V3h12v6M6 18H4v-6h16v6h-2M8 14h8v7H8z" />
+        </svg>
+        Print / Save PDF
+      </button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <!-- ===================== EDITOR ===================== -->
+    <section class="editor" aria-label="Quotation editor">
+      <form id="quoteForm" novalidate>
+        <fieldset class="block">
+          <legend>Quote details</legend>
+          <div class="grid-2">
+            <label class="field">
+              <span>Quote number</span>
+              <input type="text" id="fNumber" name="number" autocomplete="off" />
+            </label>
+            <label class="field">
+              <span>Quote date</span>
+              <input type="date" id="fDate" name="date" />
+            </label>
+            <label class="field">
+              <span>Valid for (days)</span>
+              <input type="number" id="fValidDays" name="validDays" min="0" step="1" />
+            </label>
+            <label class="field">
+              <span>Valid until</span>
+              <output id="fValidUntil" class="field-output"></output>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset class="block">
+          <legend>Quotation for</legend>
+          <label class="field">
+            <span>Contact name</span>
+            <input type="text" id="fContact" name="contact" placeholder="Alberto Mejia" autocomplete="off" />
+          </label>
+          <label class="field">
+            <span>Company</span>
+            <input type="text" id="fCompany" name="company" placeholder="G.S.W Manufacturing Inc." autocomplete="off" />
+          </label>
+          <div class="grid-2">
+            <label class="field">
+              <span>Address line 1</span>
+              <input type="text" id="fAddr1" name="addr1" placeholder="1801 Production Dr." autocomplete="off" />
+            </label>
+            <label class="field">
+              <span>Address line 2</span>
+              <input type="text" id="fAddr2" name="addr2" placeholder="Findlay, Ohio, 45840" autocomplete="off" />
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset class="block">
+          <legend>Line items</legend>
+          <div class="items-head" aria-hidden="true">
+            <span>Qty</span>
+            <span>Description</span>
+            <span>Unit price</span>
+            <span>Amount</span>
+            <span></span>
+          </div>
+          <div id="itemRows"></div>
+          <button type="button" class="btn btn-add" id="btnAddItem">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            Add line item
+          </button>
+          <p class="hint">
+            Type a number in <strong>Unit price</strong>, or a word such as
+            <strong>Included</strong> to show it as text with a $0.00 amount.
+          </p>
+        </fieldset>
+
+        <fieldset class="block">
+          <legend>Adjustments</legend>
+          <div class="grid-2">
+            <label class="field">
+              <span>Tax rate (%)</span>
+              <input type="number" id="fTaxRate" name="taxRate" min="0" step="0.01" />
+            </label>
+            <label class="field">
+              <span>Shipping / handling (USD)</span>
+              <input type="number" id="fShipping" name="shipping" min="0" step="0.01" />
+            </label>
+          </div>
+          <dl class="totals-readout">
+            <div><dt>Subtotal</dt><dd id="rSubtotal">$0.00</dd></div>
+            <div><dt>Total tax</dt><dd id="rTax">$0.00</dd></div>
+            <div><dt>Shipping / handling</dt><dd id="rShipping">$0.00</dd></div>
+            <div class="is-total"><dt>Total (USD)</dt><dd id="rTotal">$0.00</dd></div>
+          </dl>
+        </fieldset>
+
+        <fieldset class="block">
+          <legend>Terms &amp; instructions</legend>
+          <label class="field">
+            <span>Terms (one per line)</span>
+            <textarea id="fTerms" name="terms" rows="5"></textarea>
+          </label>
+          <label class="field">
+            <span>Footer contact line</span>
+            <textarea id="fFooter" name="footer" rows="2"></textarea>
+          </label>
+        </fieldset>
+      </form>
+    </section>
+
+    <!-- ===================== PREVIEW ===================== -->
+    <section class="preview" aria-label="Quotation preview">
+      <div class="sheet-frame" id="sheetFrame">
+        <div class="sheet-scaler" id="sheetScaler">
+
+          <!-- The printable document. Mirrors AIAM_Quotation_Template.xlsx -->
+          <article class="sheet" id="sheet">
+            <header class="doc-top">
+              <div class="doc-issuer">
+                <p class="issuer-name">AIAM Technology LLC.</p>
+                <p class="issuer-slogan">Where Experiments End and Machines Begin</p>
+                <p>2427 E 21st St.</p>
+                <p>Mission, Texas, 78572 USA</p>
+                <p>Phone 956-995-0007</p>
+              </div>
+              <div class="doc-logo">
+                <img src="src/img/logo_5_19_2026.png" alt="AIAM Technology" />
+              </div>
+            </header>
+
+            <p class="doc-word">QUOTE</p>
+
+            <section class="doc-parties">
+              <div class="doc-billto">
+                <p class="billto-head">Quotation for:</p>
+                <p class="billto-contact" id="docContact"></p>
+                <p class="billto-company" id="docCompany"></p>
+                <p id="docAddr1"></p>
+                <p id="docAddr2"></p>
+              </div>
+              <div class="doc-meta">
+                <div class="meta-row"><span>Quote#</span><span id="docNumber"></span></div>
+                <div class="meta-row"><span>Quote date:</span><span id="docDate"></span></div>
+                <div class="meta-row"><span>Quote valid until:</span><span id="docValid"></span></div>
+              </div>
+            </section>
+
+            <table class="doc-table">
+              <thead>
+                <tr>
+                  <th class="c-qty">QTY</th>
+                  <th class="c-desc">Description</th>
+                  <th class="c-unit">Unit Price<span>(USD)</span></th>
+                  <th class="c-amt">Amount<span>(USD)</span></th>
+                </tr>
+              </thead>
+              <tbody id="docItems"></tbody>
+            </table>
+
+            <div class="doc-body-fill"></div>
+            <div class="doc-rule" aria-hidden="true"></div>
+
+            <table class="doc-totals">
+              <tbody>
+                <tr><th>SUBTOTAL</th><td id="docSubtotal"></td></tr>
+                <tr><th>TOTAL TAX</th><td id="docTax"></td></tr>
+                <tr><th>SHIPPING/HANDLING</th><td id="docShipping"></td></tr>
+                <tr class="is-grand"><th>TOTAL (USD)</th><td id="docTotal"></td></tr>
+              </tbody>
+            </table>
+
+            <p class="doc-thanks">THANK YOU FOR YOUR BUSINESS!</p>
+
+            <section class="doc-terms">
+              <h2>Terms &amp; Instructions</h2>
+              <p id="docTerms"></p>
+            </section>
+
+            <p class="doc-footer" id="docFooter"></p>
+          </article>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/quote.js"></script>
+</body>
+</html>

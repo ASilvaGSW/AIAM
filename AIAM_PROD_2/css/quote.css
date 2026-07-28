@@ -1,0 +1,499 @@
+/* ==========================================================================
+   AIAM Quotation Builder
+   Screen: two-pane editor + live preview.
+   Print:  only the .sheet document, Letter portrait, matching
+           Quotes/AIAM_Quotation_Template.xlsx
+   ========================================================================== */
+
+:root {
+  --navy: #16243f;
+  --navy-soft: #24375c;
+  --blue: #1f4f9e;
+  --blue-dark: #1a4488;
+  --ink: #1d2a40;
+  --muted: #5d6b80;
+  --bg: #eceef1;
+  --white: #ffffff;
+  --line: #e2e5ea;
+  --accent: #f2b705;
+
+  /* Brand color taken from the template: theme accent4 (#FFC000) at 50% shade */
+  --doc-brand: #806000;
+  --doc-ink: #000000;
+
+  --radius: 10px;
+  --shadow-sm: 0 1px 2px rgba(20, 35, 65, 0.05), 0 4px 14px rgba(20, 35, 65, 0.06);
+  --shadow-md: 0 2px 4px rgba(20, 35, 65, 0.05), 0 14px 36px rgba(20, 35, 65, 0.10);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "Inter", "Segoe UI", Arial, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ===== App bar ===== */
+.app-bar {
+  flex: 0 0 auto;
+  height: 60px;
+  background: var(--navy);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 0 20px;
+  border-bottom: 2px solid var(--accent);
+}
+.app-bar-left, .app-bar-right { display: flex; align-items: center; gap: 14px; }
+.app-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: #cdd6e6;
+  background: rgba(255, 255, 255, 0.08);
+  transition: background .2s ease, color .2s ease;
+}
+.app-back:hover { background: rgba(255, 255, 255, 0.16); color: #fff; }
+.app-logo { height: 22px; width: auto; display: block; filter: invert(1) brightness(1.6); }
+.app-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.6px;
+  color: var(--accent);
+  padding-left: 14px;
+  border-left: 1px solid rgba(255, 255, 255, 0.16);
+}
+.save-state {
+  font-size: 12.5px;
+  color: #9dabc4;
+  min-width: 82px;
+  text-align: right;
+}
+
+.btn {
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #e4eaf4;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  padding: 9px 15px;
+  cursor: pointer;
+  transition: background .2s ease, border-color .2s ease, transform .2s ease;
+}
+.btn:hover { background: rgba(255, 255, 255, 0.16); border-color: rgba(255, 255, 255, 0.26); }
+.btn-primary {
+  color: #fff;
+  background: linear-gradient(90deg, var(--blue) 0%, var(--blue-dark) 100%);
+  border-color: transparent;
+  box-shadow: 0 6px 16px rgba(31, 79, 158, 0.36);
+}
+.btn-primary:hover { transform: translateY(-1px); }
+
+/* ===== Workspace ===== */
+.workspace {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(380px, 460px) 1fr;
+}
+
+/* ===== Editor pane ===== */
+.editor {
+  background: var(--white);
+  border-right: 1px solid var(--line);
+  overflow-y: auto;
+  padding: 24px 24px 60px;
+}
+.block {
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: 0;
+  padding: 22px 0 26px;
+}
+.editor .block:first-of-type { border-top: none; padding-top: 4px; }
+.block legend {
+  padding: 0;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.6px;
+  color: var(--navy);
+}
+.block legend::after {
+  content: "";
+  display: block;
+  width: 30px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+  margin-top: 8px;
+}
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+.field { display: flex; flex-direction: column; margin-top: 16px; }
+.field > span {
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .9px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.field input, .field textarea, .field select {
+  font: inherit;
+  font-size: 14.5px;
+  color: var(--ink);
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d4d9e1;
+  border-radius: 8px;
+  background: #fafbfc;
+  resize: vertical;
+  transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+}
+.field input:focus, .field textarea:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(31, 79, 158, 0.14);
+  background: #fff;
+}
+.field-output {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--navy);
+  padding: 10px 12px;
+  border: 1px dashed #d4d9e1;
+  border-radius: 8px;
+  background: #f4f6f8;
+}
+.hint { margin: 14px 0 0; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+.hint strong { color: var(--navy); }
+
+/* Line item rows */
+.items-head, .item-row {
+  display: grid;
+  grid-template-columns: 52px 1fr 92px 84px 30px;
+  gap: 8px;
+  align-items: start;
+}
+.items-head {
+  margin-top: 18px;
+  padding-bottom: 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .9px;
+  color: var(--muted);
+}
+.item-row { padding: 8px 0; border-top: 1px solid var(--line); }
+.item-row input, .item-row textarea {
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--ink);
+  width: 100%;
+  padding: 8px 9px;
+  border: 1px solid #d4d9e1;
+  border-radius: 7px;
+  background: #fafbfc;
+  resize: vertical;
+}
+.item-row textarea { min-height: 38px; line-height: 1.4; }
+.item-row input:focus, .item-row textarea:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(31, 79, 158, 0.14);
+  background: #fff;
+}
+.item-amount {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--navy);
+  text-align: right;
+  padding: 9px 4px 0 0;
+  white-space: nowrap;
+}
+.item-remove {
+  font: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 34px;
+  margin-top: 1px;
+  color: var(--muted);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: color .2s ease, background .2s ease, border-color .2s ease;
+}
+.item-remove:hover { color: #c0392b; background: #fdf0ee; border-color: #f3d3ce; }
+
+.btn-add {
+  margin-top: 14px;
+  color: var(--blue);
+  background: rgba(31, 79, 158, 0.06);
+  border: 1px dashed rgba(31, 79, 158, 0.3);
+  width: 100%;
+  justify-content: center;
+}
+.btn-add:hover { background: rgba(31, 79, 158, 0.11); border-color: rgba(31, 79, 158, 0.45); }
+
+/* Totals readout */
+.totals-readout {
+  margin: 20px 0 0;
+  padding: 16px 18px;
+  background: #f6f7f9;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  display: grid;
+  gap: 9px;
+}
+.totals-readout > div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.totals-readout dt { font-size: 13px; color: var(--muted); }
+.totals-readout dd { margin: 0; font-size: 14px; font-weight: 600; color: var(--navy); }
+.totals-readout .is-total {
+  border-top: 1px solid #d9dee6;
+  padding-top: 10px;
+  margin-top: 2px;
+}
+.totals-readout .is-total dt {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 11.5px;
+  color: var(--navy);
+}
+.totals-readout .is-total dd { font-size: 17px; font-weight: 800; }
+
+/* ===== Preview pane ===== */
+/* overflow-y is always `scroll` so the pane's width cannot change when the
+   sheet grows, which would otherwise fight with the fit-to-pane scaling. */
+.preview {
+  overflow-x: auto;
+  overflow-y: scroll;
+  padding: 28px;
+  background: #dfe2e7;
+}
+.sheet-frame { margin: 0 auto; }
+.sheet-scaler { transform: scale(var(--scale, 1)); transform-origin: top left; }
+
+/* ==========================================================================
+   The document — mirrors the Excel template
+   ========================================================================== */
+.sheet {
+  width: 8.5in;
+  min-height: 11in;
+  padding: 0.5in 0.66in 0.45in;
+  background: #fff;
+  box-shadow: 0 10px 40px rgba(20, 35, 65, 0.22);
+  font-family: "Calibri", "Carlito", "Segoe UI", Arial, sans-serif;
+  color: var(--doc-ink);
+  font-size: 9.5pt;
+  line-height: 1.35;
+  display: flex;
+  flex-direction: column;
+}
+.sheet p { margin: 0; }
+
+/* Header: issuer block + logo */
+.doc-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+.issuer-name { font-size: 11pt; font-weight: 700; }
+.issuer-slogan { font-family: "Arial Narrow", "Inter", Arial, sans-serif; font-size: 7.5pt; font-style: italic; font-weight: 700; }
+.doc-issuer p:nth-child(n + 3) { font-size: 9.5pt; }
+.doc-issuer p:nth-child(3) { margin-top: 7pt; }
+.doc-logo { flex: 0 0 auto; padding-top: 2pt; }
+.doc-logo img { width: 2.35in; height: auto; display: block; }
+
+/* "QUOTE" wordmark */
+.doc-word {
+  margin-top: 14pt !important;
+  text-align: right;
+  font-size: 26pt;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: .5pt;
+  color: var(--doc-brand);
+}
+
+/* Bill-to + meta */
+.doc-parties {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 30px;
+  margin-top: 14pt;
+}
+.billto-head { font-size: 11pt; font-weight: 700; color: var(--doc-brand); margin-bottom: 2pt !important; }
+.billto-contact { font-weight: 700; font-style: italic; }
+.billto-company { font-weight: 700; }
+.doc-billto p:empty { display: none; }
+
+.doc-meta { flex: 0 0 auto; min-width: 3.1in; padding-top: 12pt; display: grid; gap: 4pt; }
+.meta-row { display: flex; align-items: baseline; justify-content: flex-end; gap: 18pt; }
+.meta-row span:first-child { color: var(--doc-ink); }
+.meta-row span:last-child { min-width: 1.15in; text-align: right; }
+
+/* Items table */
+.doc-table { width: 100%; border-collapse: collapse; margin-top: 12pt; table-layout: fixed; }
+.doc-table thead th {
+  background: var(--doc-brand);
+  color: #fff;
+  font-size: 10pt;
+  font-weight: 700;
+  text-align: center;
+  vertical-align: middle;
+  padding: 5pt 6pt;
+}
+.doc-table thead th span { display: block; font-size: 8pt; font-weight: 700; }
+.doc-table .c-qty { width: 11.6%; }
+.doc-table .c-desc { width: 58.4%; }
+.doc-table .c-unit { width: 13.9%; }
+.doc-table .c-amt { width: 16.1%; }
+.doc-table tbody td {
+  padding: 6pt 6pt;
+  vertical-align: middle;
+  font-size: 9.5pt;
+}
+.doc-table tbody .i-qty { text-align: center; }
+.doc-table tbody .i-desc { font-size: 8pt; line-height: 1.4; word-wrap: break-word; }
+.doc-table tbody .i-unit,
+.doc-table tbody .i-amt { text-align: right; white-space: nowrap; }
+
+/* Spacer keeps the gold rule low on the page, like the template */
+.doc-body-fill { flex: 1 1 auto; min-height: 0.5in; }
+.doc-rule { height: 1.6pt; background: var(--doc-brand); }
+
+/* Totals */
+.doc-totals {
+  width: 46%;
+  margin: 12pt 0 0 auto;
+  border-collapse: collapse;
+}
+.doc-totals th {
+  text-align: right;
+  font-weight: 400;
+  font-size: 9.5pt;
+  padding: 1.5pt 12pt 1.5pt 0;
+}
+.doc-totals td {
+  width: 1.35in;
+  text-align: right;
+  font-size: 9.5pt;
+  white-space: nowrap;
+  padding: 1.5pt 0;
+}
+.doc-totals .is-grand th {
+  font-weight: 700;
+  color: var(--doc-brand);
+  padding-top: 11pt;
+}
+.doc-totals .is-grand td { font-weight: 700; padding-top: 11pt; }
+
+.doc-thanks { margin-top: 20pt !important; padding-left: 0.28in; font-size: 9.5pt; }
+
+/* Terms */
+.doc-terms { margin-top: 16pt; }
+.doc-terms h2 {
+  margin: 0 0 2pt;
+  padding-bottom: 2pt;
+  border-bottom: 1pt solid var(--doc-brand);
+  font-size: 11pt;
+  font-weight: 700;
+  color: var(--doc-brand);
+}
+.doc-terms p { font-size: 9pt; line-height: 1.5; white-space: pre-line; }
+
+.doc-footer {
+  margin-top: 16pt !important;
+  text-align: center;
+  font-size: 9.5pt;
+  font-weight: 700;
+  font-style: italic;
+  white-space: pre-line;
+}
+
+/* ===== Responsive: stack the panes on narrow screens ===== */
+@media (max-width: 1100px) {
+  body { height: auto; overflow: auto; }
+  .workspace { grid-template-columns: 1fr; }
+  .editor { border-right: none; border-bottom: 1px solid var(--line); overflow: visible; }
+  .preview { overflow-x: auto; padding: 20px; }
+}
+@media (max-width: 720px) {
+  .app-bar { height: auto; flex-wrap: wrap; gap: 10px; padding: 12px 16px; }
+  .app-bar-right { flex-wrap: wrap; }
+  .app-title { display: none; }
+  .save-state { min-width: 0; }
+  .btn { padding: 8px 12px; font-size: 12.5px; }
+  .editor { padding: 18px 16px 40px; }
+  .grid-2 { grid-template-columns: 1fr; }
+  .items-head { display: none; }
+  .item-row {
+    grid-template-columns: 60px 1fr 30px;
+    grid-template-areas: "qty desc remove" "unit unit amount";
+    row-gap: 8px;
+  }
+  .item-row .i-in-qty { grid-area: qty; }
+  .item-row .i-in-desc { grid-area: desc; }
+  .item-row .i-in-unit { grid-area: unit; }
+  .item-row .item-amount { grid-area: amount; padding-top: 8px; }
+  .item-row .item-remove { grid-area: remove; }
+}
+
+/* ==========================================================================
+   Print — only the document, Letter portrait
+   ========================================================================== */
+@page { size: letter portrait; margin: 0; }
+
+@media print {
+  html, body {
+    height: auto;
+    overflow: visible;
+    background: #fff;
+    display: block;
+  }
+  .app-bar, .editor { display: none !important; }
+  .workspace { display: block; min-height: 0; }
+  .preview { overflow: visible; padding: 0; background: #fff; }
+
+  /* Undo the on-screen fit-to-pane scaling */
+  .sheet-frame { width: auto !important; height: auto !important; margin: 0; }
+  .sheet-scaler { transform: none !important; }
+
+  .sheet {
+    width: 8.5in;
+    /* Slightly under 11in so rounding never spills onto a second page */
+    min-height: 10.8in;
+    box-shadow: none;
+    margin: 0;
+  }
+
+  /* Keep the gold header row and rules in the printed output */
+  .doc-table thead th,
+  .doc-rule {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .doc-table thead tr { break-inside: avoid; }
+  .doc-table tbody tr { break-inside: avoid; }
+  .doc-terms, .doc-totals { break-inside: avoid; }
+}

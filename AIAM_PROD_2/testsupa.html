@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Productos — CRUD Supabase</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a2332;
+      --surface-2: #243044;
+      --border: #2d3a4f;
+      --text: #e8edf4;
+      --muted: #8b9cb3;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --danger: #ef4444;
+      --danger-hover: #dc2626;
+      --success: #34d399;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    .wrap {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 3rem;
+    }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    h1 { font-size: 1.5rem; font-weight: 700; }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
+
+    .btn {
+      font: inherit;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      font-weight: 500;
+      color: #fff;
+      background: var(--accent);
+    }
+
+    .btn:hover { background: var(--accent-hover); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover {
+      background: var(--surface-2);
+      color: var(--text);
+    }
+
+    .btn-sm {
+      padding: 0.35rem 0.65rem;
+      font-size: 0.8rem;
+    }
+
+    .btn-danger { background: var(--danger); }
+    .btn-danger:hover { background: var(--danger-hover); }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .panel h2 {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 120px auto auto;
+      gap: 0.75rem;
+      align-items: end;
+    }
+
+    @media (max-width: 640px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    label {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 0.35rem;
+      font-weight: 500;
+    }
+
+    input {
+      width: 100%;
+      font: inherit;
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    input:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+    }
+
+    .status {
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      font-size: 0.875rem;
+    }
+
+    .status.loading { background: var(--surface); color: var(--muted); }
+    .status.error {
+      background: rgba(239, 68, 68, 0.12);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+    }
+    .status.success {
+      background: rgba(52, 211, 153, 0.1);
+      color: var(--success);
+      border: 1px solid rgba(52, 211, 153, 0.35);
+    }
+    .status.empty { background: var(--surface); color: var(--muted); }
+
+    .table-scroll {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    th {
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-size: 0.7rem;
+      letter-spacing: 0.04em;
+    }
+
+    td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    th.num { text-align: right; }
+
+    tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: rgba(255, 255, 255, 0.03); }
+
+    .actions {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+      white-space: nowrap;
+    }
+
+    .empty-table {
+      padding: 2rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.875rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Productos</h1>
+        <p class="subtitle">CRUD · tabla <code>products</code> en Supabase</p>
+      </div>
+      <button type="button" class="btn" id="btnRefresh">Actualizar</button>
+    </header>
+
+    <div id="status" class="status loading" hidden></div>
+
+    <section class="panel">
+      <h2 id="formTitle">Nuevo producto</h2>
+      <form id="productForm" class="form-grid">
+        <input type="hidden" id="editId" value="" />
+        <div>
+          <label for="productName">Nombre del producto</label>
+          <input id="productName" name="product_name" type="text" required placeholder="Ej. Linear Actuator" />
+        </div>
+        <div>
+          <label for="productQty">Cantidad</label>
+          <input id="productQty" name="qty" type="number" min="0" step="1" required value="1" />
+        </div>
+        <button type="submit" class="btn" id="btnSave">Guardar</button>
+        <button type="button" class="btn btn-ghost" id="btnCancel" hidden>Cancelar</button>
+      </form>
+    </section>
+
+    <div class="table-scroll" id="tableWrap" hidden>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Creado</th>
+            <th>Producto</th>
+            <th class="num">Cantidad</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <p class="empty-table" id="emptyMsg" hidden>No hay productos. Agrega uno arriba.</p>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://vysyknzuektohzybfndd.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5c3lrbnp1ZWt0b2h6eWJmbmRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzMzU0MzMsImV4cCI6MjA5NTkxMTQzM30.xhaHbB1i9rUh_NK91YMjqGaAmuPgk2QbNe8uqH9YM0M";
+
+    const API = SUPABASE_URL + "/rest/v1/products";
+    const HEADERS = {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: "Bearer " + SUPABASE_ANON_KEY,
+      "Content-Type": "application/json",
+    };
+
+    const statusEl = document.getElementById("status");
+    const tbody = document.getElementById("tbody");
+    const tableWrap = document.getElementById("tableWrap");
+    const emptyMsg = document.getElementById("emptyMsg");
+    const btnRefresh = document.getElementById("btnRefresh");
+    const productForm = document.getElementById("productForm");
+    const formTitle = document.getElementById("formTitle");
+    const editId = document.getElementById("editId");
+    const productName = document.getElementById("productName");
+    const productQty = document.getElementById("productQty");
+    const btnSave = document.getElementById("btnSave");
+    const btnCancel = document.getElementById("btnCancel");
+
+    let statusTimer = null;
+
+    function showStatus(message, type, autoHideMs) {
+      clearTimeout(statusTimer);
+      statusEl.hidden = false;
+      statusEl.textContent = message;
+      statusEl.className = "status " + type;
+      if (autoHideMs) {
+        statusTimer = setTimeout(hideStatus, autoHideMs);
+      }
+    }
+
+    function hideStatus() {
+      statusEl.hidden = true;
+    }
+
+    function formatDate(iso) {
+      if (!iso) return "—";
+      const d = new Date(iso);
+      return Number.isNaN(d.getTime())
+        ? iso
+        : d.toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" });
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text == null ? "" : String(text);
+      return div.innerHTML;
+    }
+
+    async function apiRequest(url, options) {
+      const response = await fetch(url, {
+        ...options,
+        headers: { ...HEADERS, ...options.headers },
+      });
+      const text = await response.text();
+      let body = null;
+      if (text) {
+        try {
+          body = JSON.parse(text);
+        } catch {
+          body = text;
+        }
+      }
+      if (!response.ok) {
+        const msg =
+          (body && body.message) ||
+          (typeof body === "string" ? body : JSON.stringify(body));
+        throw new Error(response.status + " — " + msg);
+      }
+      return body;
+    }
+
+    function resetForm() {
+      editId.value = "";
+      productForm.reset();
+      productQty.value = "1";
+      formTitle.textContent = "Nuevo producto";
+      btnSave.textContent = "Guardar";
+      btnCancel.hidden = true;
+    }
+
+    function startEdit(row) {
+      editId.value = row.id;
+      productName.value = row.product_name;
+      productQty.value = row.qty;
+      formTitle.textContent = "Editar producto #" + row.id;
+      btnSave.textContent = "Actualizar";
+      btnCancel.hidden = false;
+      productName.focus();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function renderRows(rows) {
+      if (!rows.length) {
+        tableWrap.hidden = true;
+        emptyMsg.hidden = false;
+        tbody.innerHTML = "";
+        return;
+      }
+
+      emptyMsg.hidden = true;
+      tableWrap.hidden = false;
+      tbody.innerHTML = rows
+        .map(
+          (row) => `
+        <tr data-id="${escapeHtml(row.id)}">
+          <td>${escapeHtml(row.id)}</td>
+          <td>${escapeHtml(formatDate(row.created_at))}</td>
+          <td>${escapeHtml(row.product_name)}</td>
+          <td class="num">${escapeHtml(row.qty)}</td>
+          <td>
+            <div class="actions">
+              <button type="button" class="btn btn-sm btn-ghost btn-edit">Editar</button>
+              <button type="button" class="btn btn-sm btn-danger btn-delete">Eliminar</button>
+            </div>
+          </td>
+        </tr>`
+        )
+        .join("");
+    }
+
+    async function loadProducts() {
+      btnRefresh.disabled = true;
+      showStatus("Cargando productos…", "loading");
+
+      try {
+        const data = await apiRequest(
+          API + "?select=id,created_at,product_name,qty&order=created_at.desc",
+          { method: "GET" }
+        );
+        hideStatus();
+        renderRows(Array.isArray(data) ? data : []);
+      } catch (err) {
+        showStatus("Error al cargar: " + err.message, "error");
+      } finally {
+        btnRefresh.disabled = false;
+      }
+    }
+
+    async function createProduct(payload) {
+      return apiRequest(API, {
+        method: "POST",
+        headers: { Prefer: "return=representation" },
+        body: JSON.stringify(payload),
+      });
+    }
+
+    async function updateProduct(id, payload) {
+      return apiRequest(API + "?id=eq." + encodeURIComponent(id), {
+        method: "PATCH",
+        headers: { Prefer: "return=representation" },
+        body: JSON.stringify(payload),
+      });
+    }
+
+    async function deleteProduct(id) {
+      return apiRequest(API + "?id=eq." + encodeURIComponent(id), {
+        method: "DELETE",
+      });
+    }
+
+    productForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = productName.value.trim();
+      const qty = parseInt(productQty.value, 10);
+
+      if (!name) {
+        showStatus("El nombre del producto es obligatorio.", "error");
+        return;
+      }
+      if (Number.isNaN(qty) || qty < 0) {
+        showStatus("La cantidad debe ser un número mayor o igual a 0.", "error");
+        return;
+      }
+
+      const payload = { product_name: name, qty };
+      btnSave.disabled = true;
+
+      try {
+        const id = editId.value;
+        if (id) {
+          await updateProduct(id, payload);
+          showStatus("Producto actualizado.", "success", 3000);
+        } else {
+          await createProduct(payload);
+          showStatus("Producto creado.", "success", 3000);
+        }
+        resetForm();
+        await loadProducts();
+      } catch (err) {
+        showStatus("Error al guardar: " + err.message, "error");
+      } finally {
+        btnSave.disabled = false;
+      }
+    });
+
+    btnCancel.addEventListener("click", resetForm);
+
+    tbody.addEventListener("click", async (e) => {
+      const row = e.target.closest("tr");
+      if (!row) return;
+      const id = row.dataset.id;
+
+      if (e.target.classList.contains("btn-edit")) {
+        const cells = row.querySelectorAll("td");
+        startEdit({
+          id,
+          product_name: cells[2].textContent,
+          qty: cells[3].textContent,
+        });
+        return;
+      }
+
+      if (e.target.classList.contains("btn-delete")) {
+        const name = row.querySelectorAll("td")[2].textContent;
+        if (!confirm('¿Eliminar "' + name + '"?')) return;
+
+        try {
+          await deleteProduct(id);
+          if (editId.value === id) resetForm();
+          showStatus("Producto eliminado.", "success", 3000);
+          await loadProducts();
+        } catch (err) {
+          showStatus("Error al eliminar: " + err.message, "error");
+        }
+      }
+    });
+
+    btnRefresh.addEventListener("click", loadProducts);
+    loadProducts();
+  </script>
+</body>
+</html>
